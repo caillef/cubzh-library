@@ -70,4 +70,6 @@ LocalEvent:Listen(LocalEvent.Name.KeyboardInput, function(char, _, _, down)
 	end
 end)
 
+print("loaded interactionModule", interactionModule.addInteraction)
+
 return interactionModule
