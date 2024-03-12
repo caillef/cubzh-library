@@ -77,7 +77,6 @@ end -- end is client
 inventoryModule.serialize = function(self, iKey)
 	local inventory = self.inventories[iKey]
 	if inventory == nil then
-		print("nil inventory", iKey)
 		return
 	end
 	local data = Data()
@@ -89,7 +88,6 @@ inventoryModule.serialize = function(self, iKey)
 		data:WriteUInt16(math.floor(id))
 		data:WriteUInt16(slot and slot.amount or 0)
 	end
-	Dev:CopyToClipboard(data:ToString({ format = "base64" }))
 	return data
 end
 
