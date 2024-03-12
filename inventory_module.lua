@@ -10,6 +10,14 @@ local inventoryModule = {
 	nbAlwaysVisible = 0,
 }
 
+local resourcesByKey = {}
+local resourcesById = {}
+
+inventoryModule.setResources = function(_, _resourcesByKey, _resourcesById)
+	resourcesByKey = _resourcesByKey
+	resourcesById = _resourcesById
+end
+
 local isClient = type(Client.IsMobile) == "boolean"
 
 if isClient then
