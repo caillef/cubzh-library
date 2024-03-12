@@ -11,7 +11,7 @@ interactionModule.addInteraction = function(_, obj, text, callback)
 	obj.interactText = text
 end
 
-function getAvailableInteraction()
+local function getAvailableInteraction()
 	local impact = Camera:CastRay(nil, Player)
 	local object = impact.Object
 	if object.root then -- all multishape should be spawned with a "root" value
@@ -22,7 +22,7 @@ function getAvailableInteraction()
 	end
 end
 
-function setInteractableObject(obj)
+local function setInteractableObject(obj)
 	if interactableObject then
 		interactionText:remove()
 	end
@@ -47,7 +47,7 @@ function setInteractableObject(obj)
 	interactionText:parentDidResize()
 end
 
-function handleInteractions()
+local function handleInteractions()
 	local obj = getAvailableInteraction()
 	if not obj then
 		setInteractableObject(nil)
