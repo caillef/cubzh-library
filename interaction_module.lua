@@ -1,4 +1,3 @@
--- Interaction module
 local REACH_DIST = 30
 
 local interactionModule = {}
