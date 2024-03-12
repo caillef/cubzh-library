@@ -2,13 +2,13 @@ local growth = {}
 local list = {}
 local time = 0
 
-growth.add = function(asset, growthAfter, onGrowth)
+growth.add = function(_, asset, growthAfter, onGrowth)
 	asset.growthAt = time + growthAfter
 	asset.onGrowth = onGrowth
 	table.insert(list, asset)
 end
 
-growth.remove = function(asset)
+growth.remove = function(_, asset)
 	for k, v in ipairs(list) do
 		if v == asset then
 			table.remove(list, k)
