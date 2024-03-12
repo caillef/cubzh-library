@@ -51,3 +51,5 @@ LocalEvent:Listen(LocalEvent.Name.Tick, function()
 		fallCallback()
 	end
 end)
+
+return areas
