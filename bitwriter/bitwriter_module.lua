@@ -10,7 +10,7 @@
 --- -20,50,400 is now 480,550,900.
 --- To save this data, you can use the following code:
 --- local data = Data()
---- local rest = bitWriter:writeNumbers(d, {
+--- local rest = bitWriter:writeNumbers(data, {
 ---     { value = 480, size = 10 }, -- x on 10 bits
 ---     { value = 550, size = 10 }, -- y on 10 bits
 ---     { value = 900, size = 10 }, -- z on 10 bits
@@ -20,16 +20,16 @@
 --- XXXXXXXX XXYYYYYY YYYYZZZZ ZZZZZZ00 <- the 0 are the 2 bits.
 --- The rest can be used to add more data right after the previous data without loosing these 2 bits.
 ---
---- d.Cursor = d.Cursor - 1 -- move back the cursor by one
---- bitWriter:writeNumbers(d, {
+--- data.Cursor = data.Cursor - 1 -- move back the cursor by one
+--- bitWriter:writeNumbers(data, {
 ---     { value = 3, size = 2 }
 --- }, { offset = 6 }) -- here offset is 6 as only 2 bits are still available (XXXXXX00)
 ---
 --- READ
 ---
 --- The read function is very similar to the write function but instead of the value, you give a key.
---- d.Cursor = 0 (if you just wrote the data, bring the Cursor back to the first byte)
---- local list = bitWriter:readNumbers(d, {
+--- data.Cursor = 0 (if you just wrote the data, bring the Cursor back to the first byte)
+--- local list = bitWriter:readNumbers(data, {
 ---     { key = "x", size = 10 }, -- x on 10 bits
 ---     { key = "y", size = 10 }, -- x on 10 bits
 ---     { key = "z", size = 10 }, -- x on 10 bits
