@@ -45,7 +45,8 @@ bitWriter:writeNumbers(d, {
 ### Read
 
 The read function is very similar to the write function but instead of the value, you give a key.
-```
+
+```lua
 d.Cursor = 0 -- (if you just wrote the data, bring the Cursor back to the first byte)
 local list = bitWriter:readNumbers(d, {
     { key = "x", size = 10 }, -- x on 10 bits
