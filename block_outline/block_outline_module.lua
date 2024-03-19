@@ -43,6 +43,10 @@ blockOutlineModule.setShape = function(_, shape)
 	shapeTarget = shape
 end
 
+blockOutlineModule.setMaxReachDist = function(_, newDist)
+	max_reach_dist = newDist
+end
+
 LocalEvent:Listen(LocalEvent.Name.Tick, function()
 	if not shapeTarget then
 		return
