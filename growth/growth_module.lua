@@ -1,3 +1,19 @@
+--- growth module to transform an asset into another one
+--- USAGE
+--- local pos = Number3(10,2,30)
+--- object.Position = pos
+--- growth:add(object, 5, function(obj)
+---   print("removing ".. obj.. " from parent")
+---   obj:RemoveFromParent()
+--- end, function()
+---   local newObj = Shape(...)
+---   newObj:SetParent(World)
+---   newObj.Position = pos
+--- end)
+---
+--- -- if you need to remove the object because the player broke it for example
+--- growth:remove(object)
+
 local growth = {}
 local list = {}
 local time = 0
