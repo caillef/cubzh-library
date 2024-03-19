@@ -1,8 +1,13 @@
 -- Black Lines when looking at a block
 
-local blockOutline = nil
-setBlockBlackLines = function(shape, block)
-	if not shape or not block or shape ~= map then
+local blockOutlineModule = {}
+
+local max_reach_dist = -1
+local shapeTarget
+local blockOutline
+
+local function setBlockBlackLines(shape, block)
+	if not shape or not block or shape ~= shapeTarget then
 		if blockOutline then
 			blockOutline:SetParent(nil)
 		end
@@ -18,23 +23,31 @@ setBlockBlackLines = function(shape, block)
 	end
 	blockOutline:SetParent(World)
 	blockOutline.Position = shape:BlockToWorld(block) + shape.Scale * 0.5
+
+	LocalEvent:Send("block_outline.update", {
+		block = block,
+	})
 end
 
-displayBlackLines = function()
+local function displayBlackLines()
 	local impact = Camera:CastRay(nil, Player)
-	if not impact.Object or impact.Object ~= map or impact.Distance > REACH_DIST then
+	if not impact.Object or impact.Object ~= shapeTarget or impact.Distance > max_reach_dist then
 		setBlockBlackLines()
 		return
 	end
 	local impactBlock = Camera:CastRay(impact.Object)
 	setBlockBlackLines(impact.Object, impactBlock.Block)
-	if holdLeftClick and blockMined.Position ~= impactBlock.Block.Position then
-		startMineBlockInFront()
-	end
+end
+
+blockOutlineModule.setShape = function(_, shape)
+	shapeTarget = shape
 end
 
 LocalEvent:Listen(LocalEvent.Name.Tick, function()
+	if not shapeTarget then
+		return
+	end
 	displayBlackLines()
 end)
 
-return blockOutline
+return blockOutlineModule
