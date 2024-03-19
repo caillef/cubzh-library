@@ -38,7 +38,7 @@ local function setBlockBlackLines(shape, block)
 		return
 	end
 
-	if block == prevBlock then
+	if prevBlock ~= nil and block.Coords == prevBlock.Coords then
 		return
 	end
 	prevBlock = block
