@@ -2,9 +2,10 @@ local growth = {}
 local list = {}
 local time = 0
 
-growth.add = function(_, asset, growthAfter, onGrowth)
+growth.add = function(_, asset, growthAfter, onRemove, onGrowth)
 	asset.growthAt = time + growthAfter
 	asset.onGrowth = onGrowth
+	asset.onRemove = onRemove
 	table.insert(list, asset)
 end
 
@@ -12,7 +13,7 @@ growth.remove = function(_, asset)
 	for k, v in ipairs(list) do
 		if v == asset then
 			table.remove(list, k)
-			asset:RemoveFromParent()
+			asset:onRemove()
 		end
 	end
 end
@@ -25,8 +26,8 @@ LocalEvent:Listen(LocalEvent.Name.Tick, function(dt)
 			return
 		end
 		if time >= asset.growthAt then
-			asset:onGrowth()
 			growth:remove(asset)
+			asset:onGrowth()
 		end
 	end
 end)
