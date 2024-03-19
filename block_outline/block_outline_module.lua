@@ -1,8 +1,24 @@
--- Black Lines when looking at a block
+--- Black lines when looking at a block (only works with Camera:SetModeFirstPerson())
+--- USAGE
+--- Modules {
+--- 	block_outline = "github.com/caillef/cubzh-library/block_outline:e0258e3"
+--- }
+---
+--- block_outline:setShape(Map)
+--- -- optional
+--- block_outline:setMaxReachDist(50) -- default value is 30
+--- LocalEvent:Listen("block_outline.update", function(data)
+---		local block = data.block
+---		if not block then
+---			print("no block focused")
+---			return
+---		end
+---		print("new block focus at", block.Coords)
+---	end)
 
 local blockOutlineModule = {}
 
-local max_reach_dist = -1
+local max_reach_dist = 30
 local shapeTarget
 local blockOutline
 
