@@ -22,16 +22,27 @@ local max_reach_dist = 30
 local shapeTarget
 local blockOutline
 
+local prevBlock
+
 local function setBlockBlackLines(shape, block)
 	if not shape or not block or shape ~= shapeTarget then
 		if blockOutline then
 			blockOutline:SetParent(nil)
 		end
-		LocalEvent:Send("block_outline.update", {
-			block = nil,
-		})
+		if prevBlock ~= nil then
+			LocalEvent:Send("block_outline.update", {
+				block = nil,
+			})
+		end
+		prevBlock = nil
 		return
 	end
+
+	if block == prevBlock then
+		return
+	end
+	prevBlock = block
+
 	if not blockOutline then
 		blockOutline = MutableShape()
 		blockOutline:AddBlock(Color(0, 0, 0, 0), 0, 0, 0)
