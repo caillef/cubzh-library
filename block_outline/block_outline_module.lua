@@ -27,6 +27,9 @@ local function setBlockBlackLines(shape, block)
 		if blockOutline then
 			blockOutline:SetParent(nil)
 		end
+		LocalEvent:Send("block_outline.update", {
+			block = nil,
+		})
 		return
 	end
 	if not blockOutline then
