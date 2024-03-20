@@ -123,7 +123,7 @@ local function colorToStr(color)
 	return string.format("%d-%d-%d", color.R, color.G, color.B)
 end
 
-local serialize = function(_, map, assets)
+local serialize = function(map, assets)
 	if not blockIdByColors then
 		blockIdByColors = {}
 		for _, v in pairs(resourcesById) do
@@ -193,7 +193,7 @@ local serialize = function(_, map, assets)
 	return d
 end
 
-local deserialize = function(_, data, callback)
+local deserialize = function(data, callback)
 	local islandInfo = {
 		blocks = {},
 		assets = {},
