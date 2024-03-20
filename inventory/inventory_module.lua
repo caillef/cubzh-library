@@ -69,7 +69,6 @@ if isClient then
 			local store = KeyValueStore("craftisland_inventories")
 			local key = string.format("%s-%s", iKey, Player.UserID)
 			store:Set(key, inventoryModule:serialize(iKey), function(success)
-				print("saving", iKey)
 				if not success then
 					print("can't save")
 				end
@@ -111,7 +110,6 @@ inventoryModule.deserialize = function(_, iKey, data)
 	for slotIndex = 1, nbSlots do
 		local id = data:ReadUInt16()
 		local amount = data:ReadUInt16()
-		print(slotIndex, id, amount)
 		if id > 0 then
 			inventory:tryAddElement(resourcesById[id].key, amount, slotIndex)
 		end
