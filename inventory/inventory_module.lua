@@ -61,6 +61,7 @@ if isClient then
 		if iKey == "cursor" then
 			return
 		end
+
 		local request = saveInventoriesRequests[iKey]
 		if request then
 			request:Cancel()
@@ -68,9 +69,11 @@ if isClient then
 		saveInventoriesRequests[iKey] = Timer(0.1, function()
 			local store = KeyValueStore("craftisland_inventories")
 			local key = string.format("%s-%s", iKey, Player.UserID)
-			store:Set(key, inventoryModule:serialize(iKey), function(success)
+			local data = inventoryModule:serialize(iKey)
+			store:Set(key, data, function(success)
 				if not success then
 					print("can't save")
+					return
 				end
 			end)
 		end)
@@ -95,7 +98,7 @@ inventoryModule.serialize = function(self, iKey)
 end
 
 inventoryModule.deserialize = function(_, iKey, data)
-	if not data then
+	if not data or iKey == "cursor" then
 		return
 	end
 	local version = data:ReadUInt8()
@@ -384,9 +387,13 @@ inventoryModule.create = function(_, iKey, config)
 		LocalEvent:Send("invSelect(" .. iKey .. ")", slots[index])
 	end
 
+	local loadingInventory = true
+
 	local ui = require("uikit")
 	LocalEvent:Listen("invUpdateSlot(" .. iKey .. ")", function(slot)
-		saveInventory(iKey)
+		if not loadingInventory then
+			saveInventory(iKey)
+		end
 
 		if not uiSlots or not slot.index or inventory.isVisible == false then
 			return
@@ -538,11 +545,17 @@ inventoryModule.create = function(_, iKey, config)
 	local kvsKey = string.format("%s-%s", iKey, Player.UserID)
 	local store = KeyValueStore("craftisland_inventories")
 	store:Get(kvsKey, function(success, results)
+		if not success then
+			print("failed to get kvs")
+			return
+		end
 		if results[kvsKey] == nil then -- new player or new inventory
+			loadingInventory = false
 			saveInventory(iKey)
 			return
 		end
 		inventoryModule:deserialize(iKey, results[kvsKey])
+		loadingInventory = false
 	end)
 
 	return inventory
@@ -576,6 +589,21 @@ LocalEvent:Listen("InvRemove", function(data)
 		return
 	end
 	data.callback(success)
+end)
+
+LocalEvent:Listen("InvClearAll", function(data)
+	local key = data.key
+	local inventory = inventoryModule.inventories[key]
+	if not inventory then
+		error("Inventory: can't find " .. key, 2)
+	end
+	for index = 1, inventory.nbSlots do
+		inventory:clearSlotContent(index)
+	end
+	if not data.callback then
+		return
+	end
+	data.callback()
 end)
 
 LocalEvent:Listen("InvClearSlot", function(data)
