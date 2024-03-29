@@ -258,10 +258,12 @@ ui_blocks.createBlock = function(_, config)
 	end
 
 	node.parentDidResize = function()
-		node.Width = config.width and config.width(node, elems) or (node.parent and node.parent.Width or 0)
-		node.Height = config.height and config.height(node, elems) or (node.parent and node.parent.Height or 0)
+		node.Width = config.width and config.width(node, elems) or (node.parent and node.parent.Width or Screen.Width)
+		node.Height = config.height and config.height(node, elems)
+			or (node.parent and node.parent.Height or Screen.Height - Screen.SafeArea.Top)
 		node.pos = config.pos and config.pos(node) or { 0, 0 }
 	end
+	node:parentDidResize()
 
 	return node, elems
 end

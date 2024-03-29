@@ -67,7 +67,7 @@ This function can create 5 types of blocks:
 ```lua
 -- smallThree and bigEight are centered based on their parents (that are columns)
 local classicText = ui:createText("Hello", Color.White, "small")
-ui_blocks:anchorNode(classicText, "center", "center")
+ui_blocks:anchorNode(classicText, "center", "bottom")
 
 local buttonHello2 = ui:createButton("Hello 2")
 ui_blocks:anchorNode(buttonHello2, "right", "top", 4)
