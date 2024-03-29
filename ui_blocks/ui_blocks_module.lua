@@ -174,39 +174,13 @@ ui_blocks.setNodePos = function(_, node, horizontalAnchor, verticalAnchor, margi
 	node.pos = { x, y }
 end
 
+-- Only works on node that are not resized // where parentDidResize is not set
+-- If you need to define parentDidResize, use setNodePos
 ui_blocks.anchorNode = function(_, node, horizontalAnchor, verticalAnchor, margins)
-	margins = margins or 0
-	if type(margins) ~= "table" then
-		-- left, bottom, right, top
-		margins = { margins, margins, margins, margins }
-	end
 	node.parentDidResize = function()
-		local x = 0
-		local y = 0
-
-		local parentWidth = node.parent and node.parent.Width or Screen.Width
-		local parentHeight = node.parent and node.parent.Height or (Screen.Height - Screen.SafeArea.Top)
-
-		if horizontalAnchor == "left" then
-			x = margins[3]
-		elseif horizontalAnchor == "center" then
-			x = parentWidth * 0.5 - node.Width * 0.5
-		elseif horizontalAnchor == "right" then
-			x = parentWidth - margins[1] - node.Width
-		end
-
-		if verticalAnchor == "bottom" then
-			y = margins[2]
-		elseif verticalAnchor == "center" then
-			y = parentHeight * 0.5 - node.Height * 0.5
-		elseif verticalAnchor == "top" then
-			y = parentHeight - margins[4] - node.Height
-		end
-
-		node.pos = { x, y }
+		ui_blocks:setNodePos(node, horizontalAnchor, verticalAnchor, margins)
 	end
 	node:parentDidResize()
-
 	return node
 end
 
