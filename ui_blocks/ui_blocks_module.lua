@@ -160,11 +160,11 @@ ui_blocks.anchorNode = function(_, node, horizontalAnchor, verticalAnchor, margi
 		end
 
 		if verticalAnchor == "bottom" then
-			x = margins[2]
+			y = margins[2]
 		elseif verticalAnchor == "center" then
-			x = node.parent.Height * 0.5 - node.Height * 0.5
+			y = node.parent.Height * 0.5 - node.Height * 0.5
 		elseif verticalAnchor == "top" then
-			x = node.parent.Height - margins[4] - node.Height
+			y = node.parent.Height - margins[4] - node.Height
 		end
 
 		node.pos = { x, y }
