@@ -142,6 +142,21 @@ ui_blocks.createLineContainer = function(_, config)
 	return node, elems
 end
 
+ui_blocks.createCenteredText = function(_, text, color, size)
+	local ui = require("uikit")
+
+	local node = ui:createText(text, color, size)
+
+	node.parentDidResize = function()
+		node.pos = {
+			node.parent.Width * 0.5 - node.Width * 0.5,
+			node.parent.Height * 0.5 - node.Height * 0.5,
+		}
+	end
+
+	return node
+end
+
 ui_blocks.createBlock = function(_, config)
 	local ui = require("uikit")
 
