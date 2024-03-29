@@ -153,7 +153,7 @@ ui_blocks.anchorNode = function(_, node, horizontalAnchor, verticalAnchor, margi
 		local y = 0
 
 		local parentWidth = node.parent and node.parent.Width or Screen.Width
-		local parentHeight = node.parent and node.parent.Height or Screen.Height
+		local parentHeight = node.parent and node.parent.Height or (Screen.Height - Screen.SafeArea.Top)
 
 		if horizontalAnchor == "left" then
 			x = margins[3]
