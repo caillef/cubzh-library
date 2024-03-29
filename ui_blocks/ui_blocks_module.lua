@@ -73,7 +73,7 @@ ui_blocks.createColumns = function(_, config)
 
 	local columns = {}
 	for i = 1, nbColumns do
-		local column = ui:createFrame()
+		local column = ui:createFrame(Color(math.random(), math.random(), math.random()))
 		nodes[i]:setParent(column)
 		column:setParent(node)
 		table.insert(columns, column)
@@ -168,21 +168,6 @@ ui_blocks.anchorNode = function(_, node, horizontalAnchor, verticalAnchor, margi
 		end
 
 		node.pos = { x, y }
-	end
-
-	return node
-end
-
-ui_blocks.createCenteredText = function(_, text, color, size)
-	local ui = require("uikit")
-
-	local node = ui:createText(text, color, size)
-
-	node.parentDidResize = function()
-		node.pos = {
-			node.parent.Width * 0.5 - node.Width * 0.5,
-			node.parent.Height * 0.5 - node.Height * 0.5,
-		}
 	end
 
 	return node
