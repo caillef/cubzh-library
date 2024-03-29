@@ -11,18 +11,14 @@ ui_blocks.createTriptych = function(_, config)
 	local center = config.center
 	local right = config.right or config.bottom
 
-	local elems = {}
 	if left then
 		left.node:setParent(node)
-		table.insert(elems, left)
 	end
 	if center then
 		center.node:setParent(node)
-		table.insert(elems, center)
 	end
 	if right then
 		right.node:setParent(node)
-		table.insert(elems, right)
 	end
 
 	node.parentDidResize = function()
@@ -55,7 +51,7 @@ ui_blocks.createTriptych = function(_, config)
 		end
 	end
 
-	return node, elems
+	return node
 end
 
 ui_blocks.createColumns = function(_, config)
@@ -138,7 +134,6 @@ end
 
 ui_blocks.createLineContainer = function(_, config)
 	local uiContainer = require("ui_container")
-	local ui = require("uikit")
 
 	local node
 	if config.dir == "vertical" then
@@ -147,38 +142,19 @@ ui_blocks.createLineContainer = function(_, config)
 		node = uiContainer:createHorizontalContainer()
 	end
 
-	local elems = {}
-
 	for _, info in ipairs(config.nodes) do
 		if info.type == "separator" then
 			node:pushSeparator()
 		elseif info.type == "gap" then
 			node:pushGap()
-		elseif info.type == "button" then
-			local btn = ui:createButton(info.text)
-			if info.color then
-				btn:setColor(info.color)
-			end
-			btn.onRelease = function()
-				if info.callback then
-					info.callback()
-				end
-			end
-			node:pushElement(btn)
-			if info.key then
-				elems[info.key] = btn
-			end
 		elseif info.type == "node" then
 			node:pushElement(info.node)
-			if info.key then
-				elems[info.key] = info.node
-			end
 		else
 			node:pushElement(info)
 		end
 	end
 
-	return node, elems
+	return node
 end
 
 ui_blocks.setNodePos = function(_, node, horizontalAnchor, verticalAnchor, margins)
@@ -228,44 +204,33 @@ ui_blocks.createBlock = function(_, config)
 
 	local node = ui:createFrame()
 
-	local elems = {}
-
 	local subnode
-	local subElems
 	if config.triptych then
-		subnode, subElems = ui_blocks:createTriptych(config.triptych)
+		subnode = ui_blocks:createTriptych(config.triptych)
 	elseif config.columns then
 		subnode = ui_blocks:createColumns({ nodes = config.columns })
 	elseif config.rows then
 		subnode = ui_blocks:createRows({ nodes = config.rows })
 	elseif config.horizontal then
-		subnode, subElems = ui_blocks:createHorizontalContainer({ nodes = config.horizontal })
+		subnode = ui_blocks:createHorizontalContainer({ nodes = config.horizontal })
 	elseif config.vertical then
-		subnode, subElems = ui_blocks:createVerticalContainer({ nodes = config.vertical })
+		subnode = ui_blocks:createVerticalContainer({ nodes = config.vertical })
 	end
 	subnode:setParent(node)
 
-	if subElems then
-		for _, v in ipairs(subElems) do
-			if v.key then
-				elems[v.key] = v.node
-			end
-		end
-	end
-
 	if config.postload then
-		config.postload(node, elems)
+		config.postload(node)
 	end
 
 	node.parentDidResize = function()
-		node.Width = config.width and config.width(node, elems) or (node.parent and node.parent.Width or Screen.Width)
-		node.Height = config.height and config.height(node, elems)
+		node.Width = config.width and config.width(node) or (node.parent and node.parent.Width or Screen.Width)
+		node.Height = config.height and config.height(node)
 			or (node.parent and node.parent.Height or Screen.Height - Screen.SafeArea.Top)
 		node.pos = config.pos and config.pos(node) or { 0, 0 }
 	end
 	node:parentDidResize()
 
-	return node, elems
+	return node
 end
 
 return ui_blocks
