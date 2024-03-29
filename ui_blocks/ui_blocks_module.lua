@@ -73,7 +73,7 @@ ui_blocks.createColumns = function(_, config)
 
 	local columns = {}
 	for i = 1, nbColumns do
-		local column = ui:createFrame(Color(math.random(), math.random(), math.random()))
+		local column = ui:createFrame()
 		nodes[i]:setParent(column)
 		column:setParent(node)
 		table.insert(columns, column)
@@ -91,6 +91,45 @@ ui_blocks.createColumns = function(_, config)
 			column.Width = columnWidth
 			column.Height = node.Height
 			column.pos = { (k - 1) * columnWidth, 0 }
+		end
+	end
+
+	return node
+end
+
+ui_blocks.createRows = function(_, config)
+	local ui = require("uikit")
+
+	local node = ui:createFrame()
+
+	local nodes = config.nodes
+
+	local nbRows = #nodes
+	if not nbRows or nbRows < 1 then
+		error("config.nodes must have at least two nodes")
+		return
+	end
+
+	local rows = {}
+	for i = 1, nbRows do
+		local row = ui:createFrame()
+		nodes[i]:setParent(row)
+		row:setParent(node)
+		table.insert(rows, row)
+	end
+	node.rows = rows
+
+	node.parentDidResize = function()
+		if not node.parent then
+			return
+		end
+		node.Width = node.parent.Width
+		node.Height = node.parent.Height
+		local rowHeight = math.floor(node.Height / nbRows)
+		for k, row in ipairs(rows) do
+			row.Width = node.Width
+			row.Height = rowHeight
+			row.pos = { 0, node.Height - k * rowHeight }
 		end
 	end
 
@@ -197,6 +236,8 @@ ui_blocks.createBlock = function(_, config)
 		subnode, subElems = ui_blocks:createTriptych(config.triptych)
 	elseif config.columns then
 		subnode = ui_blocks:createColumns({ nodes = config.columns })
+	elseif config.rows then
+		subnode = ui_blocks:createRows({ nodes = config.rows })
 	elseif config.horizontal then
 		subnode, subElems = ui_blocks:createHorizontalContainer({ nodes = config.horizontal })
 	elseif config.vertical then
