@@ -217,10 +217,6 @@ ui_blocks.createBlock = function(_, config)
 	end
 	subnode:setParent(node)
 
-	if config.postload then
-		config.postload(node)
-	end
-
 	node.parentDidResize = function()
 		if config.parentDidResize then
 			config.parentDidResize(node)

@@ -69,14 +69,12 @@ local topBar = ui_blocks:createBlock({
     width = function(node, elems) return 200 end,
     height = function(node, elems) return node.parent.Height end,
     pos = function(node) return { 10, 20 } end,
-    postload = function(node, elems)
-        -- here you can do actions on the node or the elements you loaded
+    parentDidResize = function(node)
+        -- here you can do actions on the block when the parent is resized (no need to handle pos or size of the block)
     end
 
     -- then you define either triptych, columns, rows, horizontal or vertical.
 ```
-
-`elems` is a way to retrieve a block that you created inside the config. See Triptych example under to understand how to use the height of an element to define the height of the block for example.
 
 ⚠️ do not redefined parentDidResize on a block, it will break the responsiveness of the block.
 
