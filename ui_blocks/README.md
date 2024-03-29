@@ -60,25 +60,27 @@ This function can create 5 types of blocks:
 4) Horizontal Container: list of elements that will be pushed one after the other horizontally
 5) Vertical Container: list of elements that will be pushed one after the other vertically
 
+⚠️ do not redefined parentDidResize on a block, it will break the responsiveness of the block.
+
 #### Columns
 
 ```lua
 -- smallThree and bigEight are centered based on their parents (that are columns)
 local classicText = ui:createText("Hello", Color.White, "small")
-ui_blocks:anchorNode(classicText, "center", "bottom")
+ui_blocks:anchorNode(classicText, "center", "center")
 
-local classicText2 = ui:createButton("Hello 2")
-ui_blocks:anchorNode(classicText2, "right", "top", 4)
+local buttonHello2 = ui:createButton("Hello 2")
+ui_blocks:anchorNode(buttonHello2, "right", "top", 4)
 
 local classicText3 = ui:createText("Hello 3", Color.White, "small")
 ui_blocks:anchorNode(classicText3, "left", "bottom", { 0, 2, 10, 0 })
 
 local columns = ui_blocks:createBlock({
-    height = function(node) return classicText2.Height * 3 end,
+    height = function(node) return buttonHello2.Height * 3 end,
     columns = {
         -- you can push as many elements as you want here as columns
         classicText,
-        classicText2,
+        buttonHello2,
         classicText3,
     }
 })
