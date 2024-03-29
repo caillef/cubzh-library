@@ -141,6 +141,7 @@ ui_blocks.createLineContainer = function(_, config)
 
 	return node, elems
 end
+
 ui_blocks.anchorNode = function(_, node, horizontalAnchor, verticalAnchor, margins)
 	margins = margins or 0
 	if type(margins) ~= "table" then
@@ -151,28 +152,28 @@ ui_blocks.anchorNode = function(_, node, horizontalAnchor, verticalAnchor, margi
 		local x = 0
 		local y = 0
 
+		local parentWidth = node.parent and node.parent.Width or Screen.Width
+		local parentHeight = node.parent and node.parent.Height or Screen.Height
+
 		if horizontalAnchor == "left" then
 			x = margins[3]
 		elseif horizontalAnchor == "center" then
-			x = node.parent.Width * 0.5 - node.Width * 0.5
+			x = parentWidth * 0.5 - node.Width * 0.5
 		elseif horizontalAnchor == "right" then
-			x = node.parent.Width - margins[1] - node.Width
+			x = parentWidth - margins[1] - node.Width
 		end
 
 		if verticalAnchor == "bottom" then
 			y = margins[2]
 		elseif verticalAnchor == "center" then
-			y = node.parent.Height * 0.5 - node.Height * 0.5
+			y = parentHeight * 0.5 - node.Height * 0.5
 		elseif verticalAnchor == "top" then
-			y = node.parent.Height - margins[4] - node.Height
+			y = parentHeight - margins[4] - node.Height
 		end
 
 		node.pos = { x, y }
 	end
-
-	if node.parent then
-		node:parentDidResize()
-	end
+	node:parentDidResize()
 
 	return node
 end
