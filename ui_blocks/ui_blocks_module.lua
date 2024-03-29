@@ -170,6 +170,10 @@ ui_blocks.anchorNode = function(_, node, horizontalAnchor, verticalAnchor, margi
 		node.pos = { x, y }
 	end
 
+	if node.parent then
+		node:parentDidResize()
+	end
+
 	return node
 end
 
