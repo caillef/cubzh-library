@@ -141,6 +141,37 @@ ui_blocks.createLineContainer = function(_, config)
 
 	return node, elems
 end
+ui_blocks.anchorNode = function(_, node, horizontalAnchor, verticalAnchor, margins)
+	margins = margins or 0
+	if type(margins) ~= "table" then
+		-- left, bottom, right, top
+		margins = { margins, margins, margins, margins }
+	end
+	node.parentDidResize = function()
+		local x = 0
+		local y = 0
+
+		if horizontalAnchor == "left" then
+			x = margins[3]
+		elseif horizontalAnchor == "center" then
+			x = node.parent.Width * 0.5 - node.Width * 0.5
+		elseif horizontalAnchor == "right" then
+			x = node.parent.Width - margins[1] - node.Width
+		end
+
+		if verticalAnchor == "bottom" then
+			x = margins[2]
+		elseif verticalAnchor == "center" then
+			x = node.parent.Height * 0.5 - node.Height * 0.5
+		elseif verticalAnchor == "top" then
+			x = node.parent.Height - margins[4] - node.Height
+		end
+
+		node.pos = { x, y }
+	end
+
+	return node
+end
 
 ui_blocks.createCenteredText = function(_, text, color, size)
 	local ui = require("uikit")
