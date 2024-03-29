@@ -12,13 +12,13 @@ ui_blocks.createTriptych = function(_, config)
 	local right = config.right or config.bottom
 
 	if left then
-		left.node:setParent(node)
+		left:setParent(node)
 	end
 	if center then
-		center.node:setParent(node)
+		center:setParent(node)
 	end
 	if right then
-		right.node:setParent(node)
+		right:setParent(node)
 	end
 
 	node.parentDidResize = function()
@@ -29,24 +29,23 @@ ui_blocks.createTriptych = function(_, config)
 		node.Height = node.parent.Height
 
 		if center then
-			center.node.pos =
-				{ node.Width * 0.5 - center.node.Width * 0.5, node.Height * 0.5 - center.node.Height * 0.5 }
+			center.pos = { node.Width * 0.5 - center.Width * 0.5, node.Height * 0.5 - center.Height * 0.5 }
 		end
 
 		if dir == "horizontal" then
 			if left then
-				left.node.pos = { 0, node.Height * 0.5 - left.node.Height * 0.5 }
+				left.pos = { 0, node.Height * 0.5 - left.Height * 0.5 }
 			end
 			if right then
-				right.node.pos = { node.Width - right.node.Width, node.Height * 0.5 - right.node.Height * 0.5 }
+				right.pos = { node.Width - right.Width, node.Height * 0.5 - right.Height * 0.5 }
 			end
 		end
 		if dir == "vertical" then
 			if left then
-				left.node.pos = { node.Width * 0.5 - left.node.Width * 0.5, node.Height - left.node.Height }
+				left.pos = { node.Width * 0.5 - left.Width * 0.5, node.Height - left.Height }
 			end
 			if right then
-				right.node.pos = { node.Width * 0.5 - right.node.Width * 0.5, 0 }
+				right.pos = { node.Width * 0.5 - right.Width * 0.5, 0 }
 			end
 		end
 	end
