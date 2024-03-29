@@ -223,6 +223,9 @@ ui_blocks.createBlock = function(_, config)
 	end
 
 	node.parentDidResize = function()
+		if config.parentDidResize then
+			config.parentDidResize(node)
+		end
 		node.Width = config.width and config.width(node) or (node.parent and node.parent.Width or Screen.Width)
 		node.Height = config.height and config.height(node)
 			or (node.parent and node.parent.Height or Screen.Height - Screen.SafeArea.Top)
