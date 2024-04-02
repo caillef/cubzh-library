@@ -210,10 +210,6 @@ ui_blocks.createBlock = function(_, config)
 		subnode = ui_blocks:createColumns({ nodes = config.columns })
 	elseif config.rows then
 		subnode = ui_blocks:createRows({ nodes = config.rows })
-	elseif config.horizontal then
-		subnode = ui_blocks:createHorizontalContainer({ nodes = config.horizontal })
-	elseif config.vertical then
-		subnode = ui_blocks:createVerticalContainer({ nodes = config.vertical })
 	end
 	subnode:setParent(node)
 

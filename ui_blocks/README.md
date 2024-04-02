@@ -1,10 +1,6 @@
-# bitWriter
-bitWriter is a module that writes and read bits.
-The goal is to optimize the size of the data
-It is required that the data is read in the same order as the bits are written.
-It is useful to reduce the size of chunk data.
-Data type can only write byte and not bits, this module allows you to write individual bits that are packed in bytes.
-For example to save a x,y,z position, instead of using data:WriteNumber3(Number3(200,245,23)) that will use 3 times the size of a float number, you could say that the max value is 255 so each position can be saved on 24 bits (8 bits per number).
+# UI Blocks
+
+UI Blocks is a module that allows you to place UI Kit nodes without having to set the position in parentDidResize. The goal is to avoid setting the position of each element in parentDidResize and instead use blocks with different settings (triptych, columns, rows or containers) so that your UI is responsive to the screen size (desktop or mobile).
 
 ## Usage
 
@@ -22,7 +18,7 @@ Easiest way to place your ui node in a specific corner or in the center.
 
 #### anchorNode
 
-Set the position of a noce based on its parent.
+Set the position of a node based on its parent.
 
 Parameters:
 1) ui node: the UI node
@@ -37,6 +33,8 @@ local playBtn = ui:createButton("Play")
 ui_blocks:anchorNode(playBtn, "right", "top", 5)
 ```
 
+![](media/anchor1.png)
+
 #### setNodePos
 
 If we need to define parentDidResize, we can't use the `anchorNode` function. For example here, we need to resize the button based on the Screen Width, so we use setNodePos. The parameters are the same as anchorNode.
@@ -50,15 +48,15 @@ end
 leaderboardBtn:parentDidResize()
 ```
 
+![](media/anchor2.png)
+
 ### createBlock
 
-This function can create 5 types of blocks:
+This function can create 3 types of blocks:
 
 1) Triptych: if horizontal, you can set node for left/center/right. if vertical, you can set node for top/center/bottom.
 2) Columns: they all have the same size
 3) Rows: they all have the same size
-4) Horizontal Container: list of elements that will be pushed one after the other horizontally
-5) Vertical Container: list of elements that will be pushed one after the other vertically
 
 You can't use more than one type when calling createBlock (you can't define columns and triptych for example)
 
@@ -73,7 +71,7 @@ local topBar = ui_blocks:createBlock({
         -- here you can do actions on the block when the parent is resized (no need to handle pos or size of the block)
     end
 
-    -- then you define either triptych, columns, rows, horizontal or vertical.
+    -- then you define either triptych, columns or rows.
 ```
 
 ⚠️ do not redefined parentDidResize on a block, it will break the responsiveness of the block.
@@ -86,43 +84,48 @@ You need to define the horizontal or vertical using `dir` for direction.
 
 Example of an horizontal triptych for a topbar
 ```lua
+local closeBtn = ui:createButton("X")
+closeBtn.onRelease = function()
+    print("close")
+end
+
 local topBar = ui_blocks:createBlock({
     -- width is full width, height is closeBtn.Height
-    -- we can access the elements we define in the triptych using keys (see definition of right in triptych)
-    height = function(_, elems) return elems.closeBtn.Height end,
+    height = function() return closeBtn.Height end,
     triptych = {
         dir = "horizontal",
-        color = Color(0,0,0,0.5),
-        center = { key = "title", node = ui:createText("Shop", Color.White) },
-        right = { key = "closeBtn", node = ui:createButton("X") },
+        color = Color(0,0,0,0.5), -- black with 50% opacity
+        center = ui:createText("Shop", Color.White),
+        right = closeBtn
     },
     -- called once all the objects are created, you can access elems[key]
-    postload = function(node, elems)
+    parentDidResize = function(node)
         -- here we adjust the width so that the button is a square
-        elems.closeBtn.Width = elems.closeBtn.Height
-        elems.closeBtn.onRelease = function()
-            print("close")
-        end
+        closeBtn.Width = closeBtn.Height
     end,
 })
 ```
 
+![](media/triptych.png)
+
 Example of a vertical triptych
 ```lua
--- right panel with "top" at the top, "bottom" at the bottom
 local rightPanel = ui_blocks:createBlock({
     triptych = {
         dir = "vertical",
         color = Color.Blue, -- background color
-        top = { node = ui:createText("top") },
-        -- center is not defined here
-        bottom = { node = ui:createText("bottom") },
+        top = ui:createText("top"),
+        center = ui:createText("center"),
+        bottom = ui:createText("bottom"),
     },
 })
 ```
 
+![](media/triptych2.png)
+
 ```lua
--- main container with 2 columns, the red area (future scroll view) and the blue created above
+local leftPanel = ui:createFrame(Color.Blue)
+
 local container = ui_blocks:createBlock({
     height = function(node) return node.parent and node.parent.Height - topBar.Height or 0 end,
     columns = { leftPanel, rightPanel },
@@ -131,15 +134,14 @@ local container = ui_blocks:createBlock({
 -- window is a vertical triptych with the topbar and the bottom (height of bottom is computed above)
 local window = ui_blocks:createBlock({
     width = function() return Screen.Width * 0.8 end,
-    height = function(_, elems) return Screen.Height * 0.7 end,
-    pos = function(node) return { Screen.Width * 0.5 - node.Width * 0.5, Screen.Height * 0.5 - node.Height * 0.5 } end,
+    height = function() return Screen.Height * 0.7 end,
+    pos = function() return { Screen.Width * 0.5 - node.Width * 0.5, Screen.Height * 0.5 - node.Height * 0.5 } end,
     triptych = {
         dir = "vertical",
         color = Color(0,0,0,0.5),
-        top = { key = "topBar", node = topBar },
-        bottom = { key = "container", node = container },
+        top = topBar,
+        bottom = container,
     },
-    name = "window",
 })
 window:parentDidResize()
 ```
@@ -177,3 +179,32 @@ end
 
 columns:setParent(frame)
 ```
+
+![](media/horizontal.png)
+
+### Horizontal / Vertical container
+
+These two are much more simple as their goal is to push elements into a container.
+
+You can push nodes or gaps. Gaps is a small space between elements.
+
+```lua
+local ui = require("uikit")
+
+local btn = ui:createButton("Click here")
+
+local line = ui_blocks:createLineContainer({
+    dir = "horizontal",
+    nodes = {
+        { type = "gap" }, -- add a padding before
+        ui:createText("Left"),
+        { type = "gap" },
+        btn,
+        { type = "gap" },
+        ui:createText("Right"),
+        { type = "gap" }, -- add a padding after
+    }
+})
+```
+
+![](media/container.png)
