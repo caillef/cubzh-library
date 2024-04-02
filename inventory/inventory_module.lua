@@ -280,48 +280,36 @@ inventoryModule.create = function(_, iKey, config)
 					slot.pos = { padding * 0.5, padding * 0.5 }
 				end
 				slotBg:setParent(bg)
-				if iKey ~= "cursor" and not Client.IsMobile then -- TODO: handle drag on mobile (quick hack right now to select on mobile)
+				if iKey ~= "cursor" then
 					local cursorSlotOnPress
-					slotBg.onPress = function()
-						local content = slots[slotIndex]
-						cursorSlotOnPress = inventoryModule.inventories.cursor.slots[1]
-						if not content.key then
-							return
-						end
-						if sneak then
-							LocalEvent:Send("InvAdd", {
-								key = iKey == "hotbar" and "mainInventory" or "hotbar",
-								rKey = content.key,
-								amount = content.amount,
-								callback = function()
-									inventory:clearSlotContent(slotIndex)
-								end,
-							})
-							return
-						end
-					end
-					slotBg.onDrag = function()
-						local cursorSlot = inventoryModule.inventories.cursor.slots[1]
-						if cursorSlot.key then
-							return
-						end
-						local content = slots[slotIndex]
-						if not content.key then
-							return
-						end
-						LocalEvent:Send("InvAdd", {
-							key = "cursor",
-							rKey = content.key,
-							amount = content.amount,
-							callback = function()
-								inventory:clearSlotContent(slotIndex)
-							end,
-						})
-					end
-					slotBg.onRelease = function()
-						local cursorSlot = inventoryModule.inventories.cursor.slots[1]
-						if not cursorSlot.key and slots[slotIndex].key then
+					if not Client.IsMobile then
+						slotBg.onPress = function()
 							local content = slots[slotIndex]
+							cursorSlotOnPress = inventoryModule.inventories.cursor.slots[1]
+							if not content.key then
+								return
+							end
+							if sneak then
+								LocalEvent:Send("InvAdd", {
+									key = iKey == "hotbar" and "mainInventory" or "hotbar",
+									rKey = content.key,
+									amount = content.amount,
+									callback = function()
+										inventory:clearSlotContent(slotIndex)
+									end,
+								})
+								return
+							end
+						end
+						slotBg.onDrag = function()
+							local cursorSlot = inventoryModule.inventories.cursor.slots[1]
+							if cursorSlot.key then
+								return
+							end
+							local content = slots[slotIndex]
+							if not content.key then
+								return
+							end
 							LocalEvent:Send("InvAdd", {
 								key = "cursor",
 								rKey = content.key,
@@ -330,19 +318,38 @@ inventoryModule.create = function(_, iKey, config)
 									inventory:clearSlotContent(slotIndex)
 								end,
 							})
-							return
 						end
-						if not cursorSlotOnPress.key then
-							return
+						slotBg.onRelease = function()
+							local cursorSlot = inventoryModule.inventories.cursor.slots[1]
+							if not cursorSlot.key and slots[slotIndex].key then
+								local content = slots[slotIndex]
+								LocalEvent:Send("InvAdd", {
+									key = "cursor",
+									rKey = content.key,
+									amount = content.amount,
+									callback = function()
+										inventory:clearSlotContent(slotIndex)
+									end,
+								})
+								return
+							end
+							if not cursorSlotOnPress.key then
+								return
+							end
+							local key, amount = cursorSlot.key, cursorSlot.amount
+							LocalEvent:Send("InvClearSlot", {
+								key = "cursor",
+								slotIndex = 1,
+								callback = function()
+									inventory:tryAddElement(key, amount, slotIndex)
+								end,
+							})
 						end
-						local key, amount = cursorSlot.key, cursorSlot.amount
-						LocalEvent:Send("InvClearSlot", {
-							key = "cursor",
-							slotIndex = 1,
-							callback = function()
-								inventory:tryAddElement(key, amount, slotIndex)
-							end,
-						})
+					else
+						-- mobile
+						slotBg.onRelease = function()
+							inventory:selectSlot(slotIndex)
+						end
 					end
 				end
 				LocalEvent:Send("invUpdateSlot(" .. iKey .. ")", slots[slotIndex])
