@@ -126,6 +126,10 @@ inventoryModule.create = function(_, iKey, config)
 	local nbSlots = config.width * config.height
 	local alwaysVisible = config.alwaysVisible
 	local selector = config.selector
+	local toSave = true
+	if config.toSave == false then
+		toSave = false
+	end
 
 	local inventory = {}
 	inventoryModule.inventories[iKey] = inventory
@@ -391,7 +395,7 @@ inventoryModule.create = function(_, iKey, config)
 
 	local ui = require("uikit")
 	LocalEvent:Listen("invUpdateSlot(" .. iKey .. ")", function(slot)
-		if not loadingInventory then
+		if not loadingInventory and toSave then
 			saveInventory(iKey)
 		end
 
@@ -541,22 +545,26 @@ inventoryModule.create = function(_, iKey, config)
 		inventoryModule.nbAlwaysVisible = inventoryModule.nbAlwaysVisible + 1
 	end
 
-	-- get value in KVS
-	local kvsKey = string.format("%s-%s", iKey, Player.UserID)
-	local store = KeyValueStore("craftisland_inventories")
-	store:Get(kvsKey, function(success, results)
-		if not success then
-			print("failed to get kvs")
-			return
-		end
-		if results[kvsKey] == nil then -- new player or new inventory
+	if toSave then
+		-- get value in KVS
+		local kvsKey = string.format("%s-%s", iKey, Player.UserID)
+		local store = KeyValueStore("craftisland_inventories")
+		store:Get(kvsKey, function(success, results)
+			if not success then
+				print("failed to get kvs")
+				return
+			end
+			if results[kvsKey] == nil then -- new player or new inventory
+				loadingInventory = false
+				saveInventory(iKey)
+				return
+			end
+			inventoryModule:deserialize(iKey, results[kvsKey])
 			loadingInventory = false
-			saveInventory(iKey)
-			return
-		end
-		inventoryModule:deserialize(iKey, results[kvsKey])
+		end)
+	else
 		loadingInventory = false
-	end)
+	end
 
 	return inventory
 end
