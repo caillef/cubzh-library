@@ -47,13 +47,17 @@ if isClient then
 			return
 		end
 		local inventory = inventoryModule.inventories[inventoryKey]
-		LocalEvent:Send("InvClearSlot", {
-			key = "cursor",
-			slotIndex = 1,
-			callback = function()
-				inventory:tryAddElement(cursorSlot.key, cursorSlot.amount, slotIndex)
-			end,
-		})
+		if Client.IsMobile then
+			inventory:selectSlot(slotIndex)
+		else
+			LocalEvent:Send("InvClearSlot", {
+				key = "cursor",
+				slotIndex = 1,
+				callback = function()
+					inventory:tryAddElement(cursorSlot.key, cursorSlot.amount, slotIndex)
+				end,
+			})
+		end
 	end, { topPriority = true })
 
 	local saveInventoriesRequests = {}
@@ -276,7 +280,7 @@ inventoryModule.create = function(_, iKey, config)
 					slot.pos = { padding * 0.5, padding * 0.5 }
 				end
 				slotBg:setParent(bg)
-				if iKey ~= "cursor" then
+				if iKey ~= "cursor" and not Client.IsMobile then -- TODO: handle drag on mobile (quick hack right now to select on mobile)
 					local cursorSlotOnPress
 					slotBg.onPress = function()
 						local content = slots[slotIndex]
