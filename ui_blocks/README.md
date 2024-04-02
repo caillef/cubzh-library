@@ -8,7 +8,7 @@ UI Blocks is a module that allows you to place UI Kit nodes without having to se
 
 ```lua
 Modules = {
-	ui_blocks = "github.com/caillef/cubzh-library/ui_blocks:873c6f1"
+	ui_blocks = "github.com/caillef/cubzh-library/ui_blocks:09941d5"
 }
 ```
 
