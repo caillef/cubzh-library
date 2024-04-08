@@ -659,7 +659,7 @@ LocalEvent:Listen("InvRemoveGlobal", function(data)
 		callback = function(quantities)
 			if quantities.total < amount then
 				print("Not enough resources")
-				callback(false)
+				data.callback(false)
 				return
 			end
 			for _, key in ipairs(keys) do
