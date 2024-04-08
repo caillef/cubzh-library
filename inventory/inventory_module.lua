@@ -197,6 +197,16 @@ inventoryModule.create = function(_, iKey, config)
 		return true
 	end
 
+	inventory.getQuantity = function(_, rKey)
+		local quantity = 0
+		for i = 1, nbSlots do
+			if slots[i].key == rKey and slots[i].amount and slots[i].amount > 0 then
+				quantity = quantity + slots[i].amount
+			end
+		end
+		return quantity
+	end
+
 	inventory.tryRemoveElement = function(_, rKey, amount, optionalSlot)
 		if rKey == nil or amount == nil then
 			return
@@ -211,6 +221,15 @@ inventoryModule.create = function(_, iKey, config)
 			return false
 		end
 
+		if amount > slots[slotIndex].amount then
+			amount = amount - slots[slotIndex].amount
+			slots[slotIndex] = { index = slotIndex }
+			if slots[slotIndex].amount == 0 then
+				slots[slotIndex] = { index = slotIndex }
+			end
+			LocalEvent:Send("invUpdateSlot(" .. iKey .. ")", slots[slotIndex])
+			return inventory:tryRemoveElement(rKey, amount, optionalSlot)
+		end
 		slots[slotIndex].amount = slots[slotIndex].amount - amount
 		if slots[slotIndex].amount == 0 then
 			slots[slotIndex] = { index = slotIndex }
@@ -595,6 +614,28 @@ LocalEvent:Listen("InvAdd", function(data)
 	data.callback(success)
 end)
 
+LocalEvent:Listen("InvGetQuantity", function(data)
+	local keys = type(data.keys) == "table" and data.keys or { data.keys }
+	local rKey = data.rKey
+
+	local quantities = {
+		total = 0,
+	}
+	for _, key in ipairs(keys) do
+		local inventory = inventoryModule.inventories[key]
+		if not inventory then
+			error("Inventory: can't find " .. key, 2)
+		end
+		local qty = inventory:getQuantity(rKey)
+		quantities.total = quantities.total + qty
+		quantities[key] = qty
+	end
+	if not data.callback then
+		return
+	end
+	data.callback(quantities)
+end)
+
 LocalEvent:Listen("InvRemove", function(data)
 	local key = data.key
 	local rKey = data.rKey
@@ -608,6 +649,43 @@ LocalEvent:Listen("InvRemove", function(data)
 		return
 	end
 	data.callback(success)
+end)
+
+LocalEvent:Listen("InvRemoveGlobal", function(data)
+	local keys = type(data.keys) == "table" and data.keys or { data.keys }
+	local rKey = data.rKey
+	local amount = data.amount
+
+	LocalEvent:Send("InvGetQuantity", {
+		keys = keys,
+		rKey = rKey,
+		callback = function(quantities)
+			if quantities.total < amount then
+				print("Not enough resources")
+				callback(false)
+				return
+			end
+			for _, key in ipairs(keys) do
+				local inventory = inventoryModule.inventories[key]
+				if not inventory then
+					error("Inventory: can't find " .. key, 2)
+				end
+				local qty = inventory:getQuantity(rKey)
+				if qty >= amount then
+					inventory:tryRemoveElement(rKey, qty)
+					if not data.callback then
+						return
+					end
+					data.callback(true)
+					return
+				else
+					amount = amount - qty
+					inventory:tryRemoveElement(rKey, qty)
+				end
+			end
+			data.callback(true)
+		end,
+	})
 end)
 
 LocalEvent:Listen("InvClearAll", function(data)
