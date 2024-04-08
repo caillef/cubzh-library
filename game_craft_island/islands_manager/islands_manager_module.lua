@@ -275,7 +275,7 @@ islandsManager.loadIsland = function(_, resourcesByKey, _resourcesById, callback
 	map.Pivot.Y = 1
 
 	islandsManager:getIsland(Player, function(islandData)
-		if not islandData then
+		if not islandData or islandData.Length < 10 then
 			for z = -10, 10 do
 				for y = -10, 0 do
 					for x = -10, 10 do
