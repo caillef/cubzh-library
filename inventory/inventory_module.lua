@@ -648,6 +648,27 @@ LocalEvent:Listen("InvRemove", function(data)
 	data.callback(success)
 end)
 
+LocalEvent:Listen("InvAddGlobal", function(data)
+	local keys = type(data.keys) == "table" and data.keys or { data.keys }
+	local rKey = data.rKey
+	local amount = data.amount
+
+	for _, key in ipairs(keys) do
+		local inventory = inventoryModule.inventories[key]
+		if not inventory then
+			error("Inventory: can't find " .. key, 2)
+		end
+		if inventory:tryAddElement(rKey, amount) then
+			if not data.callback then
+				return
+			end
+			data.callback(true)
+			return
+		end
+	end
+	data.callback(false)
+end)
+
 LocalEvent:Listen("InvRemoveGlobal", function(data)
 	local keys = type(data.keys) == "table" and data.keys or { data.keys }
 	local rKey = data.rKey
