@@ -520,7 +520,7 @@ inventoryModule.create = function(_, iKey, config)
 			if not down then
 				return
 			end
-			local keys = { 82, 83, 84, 85, 86, 87, 88, 89, 81 }
+			local keys = { 82, 83, 84, 85, 86, 87, 88, 89, 90, 81 }
 			for i = 1, math.min(#keys, nbSlots) do
 				if keycode == keys[i] then
 					inventory:selectSlot(i)
