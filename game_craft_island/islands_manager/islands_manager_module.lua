@@ -275,7 +275,6 @@ islandsManager.loadIsland = function(_, resourcesByKey, _resourcesById, callback
 	map.Pivot.Y = 1
 
 	islandsManager:getIsland(Player, function(islandData)
-		islandData = nil
 		if not islandData then
 			for z = -10, 10 do
 				for y = -10, 0 do
