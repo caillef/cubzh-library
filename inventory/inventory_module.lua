@@ -224,9 +224,6 @@ inventoryModule.create = function(_, iKey, config)
 		if amount > slots[slotIndex].amount then
 			amount = amount - slots[slotIndex].amount
 			slots[slotIndex] = { index = slotIndex }
-			if slots[slotIndex].amount == 0 then
-				slots[slotIndex] = { index = slotIndex }
-			end
 			LocalEvent:Send("invUpdateSlot(" .. iKey .. ")", slots[slotIndex])
 			return inventory:tryRemoveElement(rKey, amount, optionalSlot)
 		end
