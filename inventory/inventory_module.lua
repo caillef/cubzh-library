@@ -671,8 +671,8 @@ LocalEvent:Listen("InvRemoveGlobal", function(data)
 					error("Inventory: can't find " .. key, 2)
 				end
 				local qty = inventory:getQuantity(rKey)
-				if qty >= amount then
-					inventory:tryRemoveElement(rKey, qty)
+				if amount <= qty then
+					inventory:tryRemoveElement(rKey, amount)
 					if not data.callback then
 						return
 					end
