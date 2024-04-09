@@ -148,7 +148,7 @@ local resources = {
 		grow = {
 			asset = "oak_tree",
 			after = function()
-				return 5
+				return math.random(60 + 60)
 			end,
 		},
 	},
@@ -216,7 +216,7 @@ local resources = {
 		grow = {
 			asset = "wheat_step_1",
 			after = function()
-				return 5 + math.random(5)
+				return 10 + math.random(5)
 			end,
 		},
 	},
@@ -251,7 +251,7 @@ local resources = {
 		grow = {
 			asset = "wheat_step_2",
 			after = function()
-				return 5 + math.random(5)
+				return 10 + math.random(5)
 			end,
 		},
 		loot = {
@@ -289,7 +289,7 @@ local resources = {
 		grow = {
 			asset = "wheat",
 			after = function()
-				return 5 + math.random(5)
+				return math.random(30 + math.random(60))
 			end,
 		},
 		loot = {
