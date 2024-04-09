@@ -117,13 +117,14 @@ local store = KeyValueStore(islandsKey)
 local saveTimer = nil
 
 local resourcesById
+local resourcesByKey
 local blockIdByColors
 
 local function colorToStr(color)
 	return string.format("%d-%d-%d", color.R, color.G, color.B)
 end
 
-local serialize = function(map, assets)
+local serialize = function(map, assets, texturedBlocks)
 	if not blockIdByColors then
 		blockIdByColors = {}
 		for _, v in pairs(resourcesById) do
@@ -148,14 +149,18 @@ local serialize = function(map, assets)
 				if b then
 					local id = blockIdByColors[colorToStr(b.Color)]
 					if not id then
+						id = resourcesByKey[texturedBlocks[b.Coords.Z][b.Coords.Y][b.Coords.X].rKey].id
+					end
+					if not id then
 						error("block not recognized")
 					end
 
 					local pos = b.Coords
-					if offset > 0 then
-						d.Cursor = d.Cursor - 1
-					end
-					local rest = bitWriter:writeNumbers(d, {
+					-- if offset > 0 then
+					-- 	d.Cursor = d.Cursor - 1
+					-- end
+					-- local rest = bitWriter:writeNumbers(d, {
+					bitWriter:writeNumbers(d, {
 						{ value = math.floor(pos.X + 500), size = 10 }, -- x
 						{ value = math.floor(pos.Y + 500), size = 10 }, -- y
 						{ value = math.floor(pos.Z + 500), size = 10 }, -- z
@@ -197,6 +202,7 @@ local deserialize = function(data, callback)
 	local islandInfo = {
 		blocks = {},
 		assets = {},
+		texturedBlocks = {},
 	}
 	local version = data:ReadUInt8()
 	if version == 1 then
@@ -225,6 +231,8 @@ local deserialize = function(data, callback)
 
 				if resourcesById[blockOrAsset.id].block then
 					table.insert(islandInfo.blocks, blockOrAsset)
+				elseif resourcesById[blockOrAsset.id].type == "texturedblock" then
+					table.insert(islandInfo.texturedBlocks, blockOrAsset)
 				else
 					table.insert(islandInfo.assets, blockOrAsset)
 				end
@@ -239,12 +247,12 @@ local deserialize = function(data, callback)
 	end
 end
 
-islandsManager.saveIsland = function(_, map, assets)
+islandsManager.saveIsland = function(_, map, assets, texturedBlocks)
 	if saveTimer then
 		saveTimer:Cancel()
 	end
 	saveTimer = Timer(CANCEL_SAVE_SECONDS_INTERVAL, function()
-		local data = serialize(map, assets)
+		local data = serialize(map, assets, texturedBlocks)
 		store:Set(Player.UserID, data, function(success)
 			if not success then
 				print("can't save your island, please come back in a few minutes")
@@ -263,8 +271,9 @@ islandsManager.getIsland = function(_, player, callback)
 	end)
 end
 
-islandsManager.loadIsland = function(_, resourcesByKey, _resourcesById, callback)
+islandsManager.loadIsland = function(_, _resourcesByKey, _resourcesById, callback)
 	resourcesById = _resourcesById
+	resourcesByKey = _resourcesByKey
 	local playerIsland = Object()
 
 	local map = MutableShape()
@@ -277,10 +286,10 @@ islandsManager.loadIsland = function(_, resourcesByKey, _resourcesById, callback
 	islandsManager:getIsland(Player, function(islandData)
 		if not islandData or islandData.Length < 10 then
 			for z = -10, 10 do
-				for y = -10, 0 do
+				for y = -4, 0 do
 					for x = -10, 10 do
 						map:AddBlock(
-							resourcesByKey[y == 0 and "grass" or (y < -3 and "stone" or "dirt")].block.color,
+							resourcesByKey[y == 0 and "grass" or (y < -2 and "stone" or "dirt")].block.color,
 							x,
 							y,
 							z
@@ -311,7 +320,7 @@ islandsManager.loadIsland = function(_, resourcesByKey, _resourcesById, callback
 			for _, b in ipairs(islandInfo.blocks) do
 				map:AddBlock(resourcesById[b.id].block.color, b.X, b.Y, b.Z)
 			end
-			callback(map, playerIsland, islandInfo.assets)
+			callback(map, playerIsland, islandInfo.assets, islandInfo.texturedBlocks)
 		end)
 	end)
 end
