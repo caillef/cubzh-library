@@ -338,6 +338,19 @@ local resources = {
 			hp = 1,
 		},
 	},
+	{
+		id = 521,
+		key = "oak_planks",
+		name = "Oak Planks",
+		type = "texturedblock",
+		texture = "planks.png",
+		craft = {
+			inputs = {
+				{ key = "oak_log", amount = 1 },
+			},
+			outputAmount = 4,
+		},
+	},
 }
 
 return resources
