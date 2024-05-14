@@ -270,6 +270,10 @@ if IsServer then
 
 		serverDidReceiveEvent(e)
 	end)
+
+	Timer(5, function()
+		print("Setup server ok")
+	end)
 else
 	-- client
 
