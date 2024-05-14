@@ -105,7 +105,7 @@ gigax.updateCharacterPosition = function(_, characterId, position)
 end
 
 Timer(5, function()
-	print(IsServer)
+	print("is server", IsServer)
 end)
 
 if IsServer then
