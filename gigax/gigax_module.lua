@@ -266,6 +266,8 @@ if IsServer then
 	end
 
 	LocalEvent:Listen(LocalEvent.Name.DidReceiveEvent, function(e)
+		print("server received event")
+
 		serverDidReceiveEvent(e)
 	end)
 else
@@ -458,6 +460,7 @@ else
 			e.action = "registerEngine"
 			e.simulationName = config.simulationName
 			e:SendTo(Server)
+			print("send register Engine")
 		end)
 	end
 
