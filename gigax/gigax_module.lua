@@ -11,7 +11,16 @@ local headers = {
 	["Authorization"] = CUBZH_API_TOKEN,
 }
 
-print(IsServer, IsClient)
+if IsServer then
+	print("MOD LOADED ON SERVER")
+end
+
+if IsClient then
+	print("MOD LOADED ON CLIENT")
+end
+
+print("IsClient:", IsClient)
+print("IsServer:", IsServer)
 
 -- HELPERS
 local _helpers = {}
