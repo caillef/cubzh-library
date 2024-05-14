@@ -475,4 +475,172 @@ else
 	end)
 end
 
+local character
+local npcData = {}
+local locationData = {}
+
+-- Function to create and register an NPC
+local function registerNPC(avatarId, physicalDescription, psychologicalProfile, currentLocationName, skills)
+	-- Add NPC to npcData table
+	npcData[avatarId] = {
+		name = avatarId,
+		physical_description = physicalDescription,
+		psychological_profile = psychologicalProfile,
+		current_location_name = currentLocationName,
+		skills = skills,
+	}
+end
+
+-- Function to register a location
+local function registerLocation(name, position, description)
+	locationData[name] = {
+		position = { x = position._x, y = position._y, z = position._z },
+		name = name,
+		description = description,
+	}
+end
+
+local function registerEngine(sender, simulationName)
+	local apiUrl = API_URL .. "/api/engine/company/"
+
+	-- Prepare the data structure expected by the backend
+	local engineData = {
+		name = simulationName, -- using Player.UserID to keep simulation name unique
+		NPCs = {},
+		locations = {}, -- Populate if you have dynamic location data similar to NPCs
+	}
+	for _, npc in pairs(npcData) do
+		table.insert(engineData.NPCs, npc)
+	end
+	for _, loc in pairs(locationData) do
+		table.insert(engineData.locations, loc)
+	end
+
+	local body = JSON:Encode(engineData)
+
+	HTTP:Post(apiUrl, headers, body, function(res)
+		if res.StatusCode ~= 201 then
+			print("Error updating engine: " .. res.StatusCode)
+			return
+		end
+		-- Decode the response body to extract engine and location IDs
+		local responseData = JSON:Decode(res.Body)
+
+		-- Save the engine_id for future use
+		engineId = responseData.engine.id
+
+		-- Saving all the _ids inside locationData table:
+		for _, loc in ipairs(responseData.locations) do
+			locationData[loc.name]._id = loc._id
+		end
+
+		-- same for characters:
+		for _, npc in pairs(responseData.NPCs) do
+			npcData[npc.name]._id = npc._id
+			local e = Event()
+			e.action = "NPCRegistered"
+			e.npcName = npc.name
+			e.npcPosition = Number3(npc.position.x, npc.position.y, npc.position.z)
+			e.npcId = npc._id
+			e["gigax.engineId"] = engineId
+			e:SendTo(sender)
+		end
+
+		registerMainCharacter(locationData["Medieval Inn"]._id, sender)
+	end)
+end
+
+local function registerMainCharacter(locationId, sender)
+	-- Example character data, replace with actual data as needed
+	local newCharacterData = {
+		name = "oncheman",
+		physical_description = "A human playing the game",
+		current_location_id = locationId,
+		position = { x = 0, y = 0, z = 0 },
+	}
+
+	-- Serialize the character data to JSON
+	local jsonData = JSON:Encode(newCharacterData)
+
+	local apiUrl = API_URL .. "/api/character/company/main?engine_id=" .. engineId
+
+	-- Make the HTTP POST request
+	HTTP:Post(apiUrl, headers, jsonData, function(response)
+		if response.StatusCode ~= 200 then
+			print("Error creating or fetching main character: " .. response.StatusCode)
+		end
+		character = JSON:Decode(response.Body)
+		local e = Event()
+		e.action = "mainCharacterCreated"
+		e["character"] = character
+		e:SendTo(sender)
+	end)
+end
+
+local function stepMainCharacter(character, actionType, targetId, targetName, content)
+	if not engineId then
+		return
+	end
+	-- Now, step the character
+	local stepUrl = API_URL .. "/api/character/" .. character._id .. "/step-no-ws?engine_id=" .. engineId
+	local stepActionData = {
+		character_id = character._id, -- Use the character ID from the creation/fetch response
+		action_type = actionType,
+		target = targetId,
+		target_name = targetName,
+		content = content,
+	}
+	local stepJsonData = JSON:Encode(stepActionData)
+
+	HTTP:Post(stepUrl, headers, stepJsonData, function(stepResponse)
+		if stepResponse.StatusCode ~= 200 then
+			print("Error stepping character: " .. stepResponse.StatusCode)
+			return
+		end
+
+		local actions = JSON:Decode(stepResponse.Body)
+		-- Find the target character by id using the "target" field in the response:
+		for _, action in ipairs(actions) do
+			local e = Event()
+			e.action = "NPCActionResponse"
+			e.actionData = action
+			e.actionType = action.action_type
+			e:SendTo(Players)
+		end
+	end)
+end
+
+local function serverDidReceiveEvent(e)
+	if e.action == "registerNPC" then
+		registerNPC(e.avatarId, e.physicalDescription, e.psychologicalProfile, e.currentLocationName, e.skills)
+	elseif e.action == "registerLocation" then
+		registerLocation(e.name, e.position, e.description)
+	elseif e.action == "registerEngine" then
+		registerEngine(e.Sender, e.Sender.UserID .. "_" .. e.simulationName)
+	elseif e.action == "stepMainCharacter" then
+		stepMainCharacter(character, e.actionType, npcData["aduermael"]._id, npcData["aduermael"].name, e.content)
+	elseif e.action == "updateCharacterLocation" then
+		if character == nil then
+			print("Character not created yet; cannot update location.")
+			return
+		end
+		local closest = _helpers:findClosestLocation(e.position, locationData)
+		-- if closest._id is different from the current location, update the character's location
+		if closest._id ~= character.current_location._id and closest._id ~= nil then
+			updateCharacterLocation(e.characterId, closest._id, e.position)
+			character.current_location._id = closest._id
+		end
+	else
+		print("Unknown Gigax message received from server.")
+	end
+end
+
+LocalEvent:Listen(LocalEvent.Name.DidReceiveEvent, function(e)
+	print("server received event")
+
+	serverDidReceiveEvent(e)
+end)
+
+gigax.serverDidReceiveEvent = serverDidReceiveEvent
+
 return gigax
