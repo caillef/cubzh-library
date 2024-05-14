@@ -444,8 +444,12 @@ else
 		for _, elem in ipairs(config.locations) do
 			createLocation(elem.name, elem.pos, elem.description)
 		end
+		local cleanSkills = JSON:Decode(JSON:Encode(config.skills))
+		for _, elem in ipairs(cleanSkills) do
+			elem.callback = nil
+		end
 		for _, elem in ipairs(config.npcs) do
-			createNPC(elem.name, elem.description, elem.mood, elem.location, elem.pos, config.skills)
+			createNPC(elem.name, elem.description, elem.mood, elem.location, elem.pos, cleanSkills)
 		end
 
 		Timer(2, function()
