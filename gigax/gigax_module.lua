@@ -104,6 +104,10 @@ gigax.updateCharacterPosition = function(_, characterId, position)
 	end)
 end
 
+Timer(5, function()
+	print(IsServer)
+end)
+
 if IsServer then
 	local character
 	local npcData = {}
