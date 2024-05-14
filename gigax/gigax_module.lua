@@ -4,10 +4,61 @@ local CUBZH_API_TOKEN =
 	"H4gjL-e9kvLF??2pz6oh=kJL497cBnsyCrQFdVkFadUkLnIaEamroYHb91GywMXrbGeDdmTiHxi8EqmJduCKPrDnfqWsjGuF0JJCUTrasGcBfGx=tlJCjq5q8jhVHWL?krIE74GT9AJ7qqX8nZQgsDa!Unk8GWaqWcVYT-19C!tCo11DcLvrnJPEOPlSbH7dDcXmAMfMEf1ZwZ1v1C9?2/BjPDeiAVTRlLFilwRFmKz7k4H-kCQnDH-RrBk!ZHl7"
 local API_URL = "https://gig.ax"
 
+local TRIGGER_AREA_SIZE = Number3(60, 30, 60)
+
 local headers = {
 	["Content-Type"] = "application/json",
 	["Authorization"] = CUBZH_API_TOKEN,
 }
+
+-- HELPERS
+local _helpers = {}
+
+_helpers.lookAt = function(obj, target)
+	if not target then
+		require("ease"):linear(obj, 0.1).Forward = obj.initialForward
+		obj.Tick = nil
+		return
+	end
+	obj.Tick = function(self, _)
+		_helpers.lookAtHorizontal(self, target)
+	end
+end
+
+_helpers.lookAtHorizontal = function(o1, o2)
+	local n3_1 = Number3.Zero
+	local n3_2 = Number3.Zero
+	n3_1:Set(o1.Position.X, 0, o1.Position.Z)
+	n3_2:Set(o2.Position.X, 0, o2.Position.Z)
+	require("ease"):linear(o1, 0.1).Forward = n3_2 - n3_1
+end
+
+-- Function to calculate distance between two positions
+_helpers.calculateDistance = function(_, pos1, pos2)
+	local dx = pos1.X - pos2.x
+	local dy = pos1.Y - pos2.y
+	local dz = pos1.Z - pos2.z
+	return math.sqrt(dx * dx + dy * dy + dz * dz)
+end
+
+_helpers.findClosestLocation = function(_, playerPosition, locationData)
+	if not locationData then
+		return
+	end
+	-- Assume `playerPosition` holds the current position of the player
+	local closestLocation = nil
+	local smallestDistance = math.huge -- Large initial value
+
+	for _, location in pairs(locationData) do
+		local distance = _helpers:calculateDistance(playerPosition, location.position)
+		if distance < smallestDistance then
+			smallestDistance = distance
+			closestLocation = location
+		end
+	end
+	-- Closest location found, now send its ID to update the character's location
+	return closestLocation
+end
 
 local engineId
 gigax.updateCharacterLocation = function(_, characterId, locationId, position)
