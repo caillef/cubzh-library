@@ -11,6 +11,8 @@ local headers = {
 	["Authorization"] = CUBZH_API_TOKEN,
 }
 
+print(IsServer, IsClient)
+
 -- HELPERS
 local _helpers = {}
 
