@@ -49,10 +49,8 @@ _helpers.findClosestLocation = function(_, position, locationData)
 	local smallestDistance = math.huge -- Large initial value
 
 	for _, location in pairs(locationData) do
-		local distance = _helpers:calculateDistance(
-			position,
-			Map:BlockToWorld(Number3(location.position.X, location.position.Y, location.position.Z))
-		)
+		print(">", position, location.position)
+		local distance = _helpers:calculateDistance(position, Map:BlockToWorld(location.position))
 		if distance < smallestDistance then
 			smallestDistance = distance
 			closestLocation = location
