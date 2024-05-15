@@ -164,7 +164,7 @@ if IsServer then
 				local e = Event()
 				e.action = "linkEngine"
 				e.simulation = {
-					-- NPCs = simulation.NPCs,
+					NPCs = simulation.NPCs,
 					locations = simulation.locations,
 					engineId = simulation.engineId,
 				}
