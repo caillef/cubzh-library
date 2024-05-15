@@ -224,6 +224,22 @@ if IsServer then
 				simulation.NPCs["aduermael"].name,
 				e.content
 			)
+
+			stepMainCharacter(
+				simulation,
+				e.actionType,
+				simulation.NPCs["soliton"]._id,
+				simulation.NPCs["soliton"].name,
+				e.content
+			)
+
+			stepMainCharacter(
+				simulation,
+				e.actionType,
+				simulation.NPCs["caillef"]._id,
+				simulation.NPCs["caillef"].name,
+				e.content
+			)
 		else
 			print("Unknown Gigax message received from server.")
 		end
