@@ -123,10 +123,8 @@ if IsServer then
 				current_location_name = npc.currentLocationName,
 				skills = cleanSkills,
 			}
-			print(JSON:Encode(simulation.NPCs[npc.name]))
 			table.insert(engineData.NPCs, simulation.NPCs[npc.name])
 		end
-		print(#JSON:Encode(simulation.NPCs), JSON:Encode(simulation.NPCs))
 
 		for _, loc in ipairs(config.locations) do
 			simulation.locations[loc.name] = {
@@ -134,7 +132,6 @@ if IsServer then
 				position = { x = loc.position.X, y = loc.position.Y, z = loc.position.Z },
 				description = loc.description,
 			}
-			print(JSON:Encode(simulation.locations[loc.name]))
 			table.insert(engineData.locations, simulation.locations[loc.name])
 		end
 
