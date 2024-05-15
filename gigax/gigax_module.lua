@@ -287,9 +287,6 @@ if IsServer then
 	gigax.serverDidReceiveEvent = serverDidReceiveEvent
 else
 	-- client
-
-	gigax = {}
-
 	local npcDataClient = {} -- map <name,table>
 	local npcDataClientById = {}
 
