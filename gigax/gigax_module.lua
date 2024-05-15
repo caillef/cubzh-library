@@ -324,7 +324,8 @@ else
 			engineId = simulation.engineId
 
 			updateLocationTimer = Timer(1, true, function()
-				gigax:updateCharacterPosition(simulation, simulation.character._id, Player.Position)
+				local position = Map:WorldToBlock(Player.Position)
+				gigax:updateCharacterPosition(simulation, simulation.character._id, position)
 			end)
 		elseif e.action == "NPCActionResponse" then
 			local currentAction = string.lower(e.actionType)
