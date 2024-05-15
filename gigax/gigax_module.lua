@@ -426,6 +426,7 @@ else
 				return
 			end
 			local position = Map:WorldToBlock(NPC.object.Position)
+			print(name, "is", NPC._id)
 			gigax:updateCharacterPosition(simulation, NPC._id, position)
 		end)
 		return NPC
