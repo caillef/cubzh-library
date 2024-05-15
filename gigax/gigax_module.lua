@@ -126,6 +126,7 @@ if IsServer then
 			print(JSON:Encode(simulation.NPCs[npc.name]))
 			table.insert(engineData.NPCs, simulation.NPCs[npc.name])
 		end
+		print(#JSON:Encode(simulation.NPCs), JSON:Encode(simulation.NPCs))
 
 		for _, loc in ipairs(config.locations) do
 			simulation.locations[loc.name] = {
