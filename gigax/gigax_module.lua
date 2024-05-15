@@ -54,16 +54,15 @@ _helpers.calculateDistance = function(_, pos1, pos2)
 	return math.sqrt(dx * dx + dy * dy + dz * dz)
 end
 
-_helpers.findClosestLocation = function(_, playerPosition, locationData)
+_helpers.findClosestLocation = function(_, position, locationData)
 	if not locationData then
 		return
 	end
-	-- Assume `playerPosition` holds the current position of the player
 	local closestLocation = nil
 	local smallestDistance = math.huge -- Large initial value
 
 	for _, location in pairs(locationData) do
-		local distance = _helpers:calculateDistance(playerPosition, location.position)
+		local distance = _helpers:calculateDistance(position, location.position)
 		if distance < smallestDistance then
 			smallestDistance = distance
 			closestLocation = location
@@ -73,80 +72,13 @@ _helpers.findClosestLocation = function(_, playerPosition, locationData)
 	return closestLocation
 end
 
-local engineId
-gigax.updateCharacterLocation = function(_, characterId, locationId, position)
-	local updateData = {
-		current_location_id = locationId,
-		position = { x = position.X, y = position.Y, z = position.Z },
-	}
-
-	if not characterId then
-		return
-	end
-
-	local jsonData = JSON:Encode(updateData)
-	-- Assuming `characterId` and `engineId` are available globally or passed appropriately
-	local apiUrl = API_URL .. "/api/character/" .. characterId .. "?engine_id=" .. engineId
-
-	HTTP:Post(apiUrl, headers, jsonData, function(response)
-		if response.StatusCode ~= 200 then
-			print("Error updating character location: " .. response.StatusCode)
-			return
-		end
-	end)
-end
-
-gigax.updateCharacterPosition = function(_, characterId, position)
-	local updateData = {
-		position = { x = position.X, y = position.Y, z = position.Z },
-	}
-
-	if not characterId then
-		return
-	end
-
-	local jsonData = JSON:Encode(updateData)
-	-- Assuming `characterId` and `engineId` are available globally or passed appropriately
-	local apiUrl = API_URL .. "/api/character/" .. characterId .. "?engine_id=" .. engineId
-
-	HTTP:Post(apiUrl, headers, jsonData, function(response)
-		if response.StatusCode ~= 200 then
-			print("Error updating character location: " .. response.StatusCode)
-			return
-		end
-	end)
-end
-
 if IsServer then
-	local character
-	local npcData = {}
-	local locationData = {}
+	local simulations = {}
 
-	-- Function to create and register an NPC
-	local function registerNPC(avatarId, physicalDescription, psychologicalProfile, currentLocationName, skills)
-		-- Add NPC to npcData table
-		npcData[avatarId] = {
-			name = avatarId,
-			physical_description = physicalDescription,
-			psychological_profile = psychologicalProfile,
-			current_location_name = currentLocationName,
-			skills = skills,
-		}
-	end
-
-	-- Function to register a location
-	local function registerLocation(name, position, description)
-		locationData[name] = {
-			position = { x = position._x, y = position._y, z = position._z },
-			name = name,
-			description = description,
-		}
-	end
-
-	local function registerMainCharacter(locationId, sender)
+	local function registerMainCharacter(simulation, locationId, done)
 		-- Example character data, replace with actual data as needed
 		local newCharacterData = {
-			name = "oncheman",
+			name = simulation.player.Username,
 			physical_description = "A human playing the game",
 			current_location_id = locationId,
 			position = { x = 0, y = 0, z = 0 },
@@ -155,23 +87,31 @@ if IsServer then
 		-- Serialize the character data to JSON
 		local jsonData = JSON:Encode(newCharacterData)
 
-		local apiUrl = API_URL .. "/api/character/company/main?engine_id=" .. engineId
+		local apiUrl = API_URL .. "/api/character/company/main?engine_id=" .. simulation.engineId
 
 		-- Make the HTTP POST request
 		HTTP:Post(apiUrl, headers, jsonData, function(response)
 			if response.StatusCode ~= 200 then
 				print("Error creating or fetching main character: " .. response.StatusCode)
 			end
-			character = JSON:Decode(response.Body)
-			local e = Event()
-			e.action = "mainCharacterCreated"
-			e["character"] = character
-			e:SendTo(sender)
+			simulation.character = JSON:Decode(response.Body)
+			done()
 		end)
 	end
 
-	local function registerEngine(sender, simulationName)
+	local function registerEngine(player, simulationName, config)
 		local apiUrl = API_URL .. "/api/engine/company/"
+
+		local simulation = {
+			engineId = nil,
+			character = nil,
+			locations = {},
+			NPCs = {},
+			config = config,
+			player = player,
+		}
+		simulation.player.simulationName = simulationName
+		simulations[simulationName] = simulation
 
 		-- Prepare the data structure expected by the backend
 		local engineData = {
@@ -179,11 +119,34 @@ if IsServer then
 			NPCs = {},
 			locations = {}, -- Populate if you have dynamic location data similar to NPCs
 		}
-		for _, npc in pairs(npcData) do
-			table.insert(engineData.NPCs, npc)
+
+		-- remove functions in skill
+		local cleanSkills = JSON:Decode(JSON:Encode(config.skills))
+		for _, elem in ipairs(cleanSkills) do
+			elem.callback = nil
+			elem.onEndCallback = nil
 		end
-		for _, loc in pairs(locationData) do
-			table.insert(engineData.locations, loc)
+
+		for _, npc in pairs(config.NPCs) do
+			simulation.NPCs[npc.name] = {
+				name = npc.name,
+				physical_description = npc.physicalDescription,
+				psychological_profile = npc.psychologicalProfile,
+				current_location_name = npc.currentLocationName,
+				skills = cleanSkills,
+			}
+			print(JSON:Encode(simulation.NPCs[npc.name]))
+			table.insert(engineData.NPCs, simulation.NPCs[npc.name])
+		end
+
+		for _, loc in ipairs(config.locations) do
+			simulation.locations[loc.name] = {
+				name = loc.name,
+				position = { x = loc.position.X, y = loc.position.Y, z = loc.position.Z },
+				description = loc.description,
+			}
+			print(JSON:Encode(simulation.locations[loc.name]))
+			table.insert(engineData.locations, simulation.locations[loc.name])
 		end
 
 		local body = JSON:Encode(engineData)
@@ -197,35 +160,36 @@ if IsServer then
 			local responseData = JSON:Decode(res.Body)
 
 			-- Save the engine_id for future use
-			engineId = responseData.engine.id
+			simulation.engineId = responseData.engine.id
 
 			-- Saving all the _ids inside locationData table:
 			for _, loc in ipairs(responseData.locations) do
-				locationData[loc.name]._id = loc._id
+				simulation.locations[loc.name]._id = loc._id
 			end
 
 			-- same for characters:
 			for _, npc in pairs(responseData.NPCs) do
-				npcData[npc.name]._id = npc._id
-				local e = Event()
-				e.action = "NPCRegistered"
-				e.npcName = npc.name
-				e.npcPosition = Number3(npc.position.x, npc.position.y, npc.position.z)
-				e.npcId = npc._id
-				e["gigax.engineId"] = engineId
-				e:SendTo(sender)
+				simulation.NPCs[npc.name]._id = npc._id
+				simulation.NPCs[npc.name].position = Number3(npc.position.x, npc.position.y, npc.position.z)
 			end
 
-			registerMainCharacter(locationData["Medieval Inn"]._id, sender)
+			registerMainCharacter(simulation, simulation.locations["Medieval Inn"]._id, function()
+				local e = Event()
+				e.action = "linkEngine"
+				e.simulation =
+					{ NPCs = simulation.NPCs, locations = simulation.locations, engineId = simulation.engineId }
+				e:SendTo(simulation.player)
+			end)
 		end)
 	end
 
-	local function stepMainCharacter(character, actionType, targetId, targetName, content)
-		if not engineId then
+	local function stepMainCharacter(simulation, actionType, targetId, targetName, content)
+		if not simulation then
 			return
 		end
+		local character = simulation.character
 		-- Now, step the character
-		local stepUrl = API_URL .. "/api/character/" .. character._id .. "/step-no-ws?engine_id=" .. engineId
+		local stepUrl = API_URL .. "/api/character/" .. character._id .. "/step-no-ws?engine_id=" .. simulation.engineId
 		local stepActionData = {
 			character_id = character._id, -- Use the character ID from the creation/fetch response
 			action_type = actionType,
@@ -254,41 +218,54 @@ if IsServer then
 	end
 
 	local function serverDidReceiveEvent(e)
-		if e.action == "registerNPC" then
-			registerNPC(e.avatarId, e.physicalDescription, e.psychologicalProfile, e.currentLocationName, e.skills)
-		elseif e.action == "registerLocation" then
-			registerLocation(e.name, e.position, e.description)
-		elseif e.action == "registerEngine" then
-			registerEngine(e.Sender, e.Sender.UserID .. "_" .. e.simulationName)
-		elseif e.action == "stepMainCharacter" then
-			stepMainCharacter(character, e.actionType, npcData["aduermael"]._id, npcData["aduermael"].name, e.content)
-		elseif e.action == "updateCharacterLocation" then
-			if character == nil then
-				print("Character not created yet; cannot update location.")
-				return
-			end
-			local closest = _helpers:findClosestLocation(e.position, locationData)
-			-- if closest._id is different from the current location, update the character's location
-			if closest._id ~= character.current_location._id and closest._id ~= nil then
-				gigax.haracterLocation(e.characterId, closest._id, e.position)
-				character.current_location._id = closest._id
-			end
+		local simulation = simulations[e.Sender.simulationName]
+		if not simulation then
+			print("no simulation available for ", e.Sender.Username, e.Sender.simulationName)
+			return
+		end
+		if e.action == "stepMainCharacter" then
+			stepMainCharacter(
+				simulation,
+				e.actionType,
+				simulation.NPCs["aduermael"]._id,
+				simulation.NPCs["aduermael"].name,
+				e.content
+			)
 		else
 			print("Unknown Gigax message received from server.")
 		end
 	end
 
+	local config
+	gigax.setConfig = function(_, _config)
+		config = _config
+	end
+
+	LocalEvent:Listen(LocalEvent.Name.OnPlayerJoin, function(player)
+		if not config then
+			print("Error: Call gigax:setConfig(config) in Server.OnStart")
+			return
+		end
+		print(player)
+		player.simulationName = player.UserID .. "_" .. config.simulationName
+		registerEngine(player, player.simulationName, config)
+	end)
+
 	LocalEvent:Listen(LocalEvent.Name.DidReceiveEvent, function(e)
 		serverDidReceiveEvent(e)
 	end)
-
-	gigax.serverDidReceiveEvent = serverDidReceiveEvent
 else
 	-- client
 	local npcDataClient = {} -- map <name,table>
 	local npcDataClientById = {}
 
+	local simulation = nil
+
+	local waitingLinkNPCs = {}
+
 	local actionCallbacks = {}
+	local onEndCallbacks = {}
+
 	local config = {}
 
 	gigax.action = function(self, actionType, data)
@@ -307,47 +284,72 @@ else
 		return npcDataClientById[id]
 	end
 
-	local skillOnAction = function(actionType, callback)
+	local skillOnAction = function(actionType, callback, onEndCallback)
 		actionCallbacks[actionType] = callback
+		onEndCallbacks[actionType] = onEndCallback
 	end
 
+	gigax.updateCharacterPosition = function(_, simulation, characterId, position)
+		if not simulation then
+			return
+		end
+		local closest = _helpers:findClosestLocation(position, simulation.locations)
+		if not closest then
+			print("can't update character position: no closest location found, id:", characterId, position)
+			return
+		end
+		local location_id = closest._id
+
+		local updateData = {
+			current_location_id = location_id,
+			position = { x = position.X, y = position.Y, z = position.Z },
+		}
+
+		local jsonData = JSON:Encode(updateData)
+		local apiUrl = API_URL .. "/api/character/" .. characterId .. "?engine_id=" .. simulation.engineId
+
+		HTTP:Post(apiUrl, headers, jsonData, function(response)
+			if response.StatusCode ~= 200 then
+				print("Error updating character location: " .. response.StatusCode)
+				return
+			end
+		end)
+	end
+
+	local onEndData
+	local prevAction
 	local function clientDidReceiveEvent(e)
-		if e.action == "NPCActionResponse" then
-			local callback = actionCallbacks[string.lower(e.actionType)]
+		if e.action == "linkEngine" then
+			simulation = e.simulation
+			for name, npc in pairs(waitingLinkNPCs) do
+				npc._id = simulation.NPCs[name]._id
+
+				npcDataClient[name] = npc
+				npcDataClientById[npc._id] = npc
+				npcDataClient[name]._id = npc._id
+				npcDataClient[name].object.Position = npc.position
+			end
+			engineId = simulation.engineId
+
+			updateLocationTimer = Timer(1, true, function()
+				gigax:updateCharacterPosition(simulation, simulation.character._id, Player.Position)
+			end)
+		elseif e.action == "NPCActionResponse" then
+			local currentAction = string.lower(e.actionType)
+			if onEndData and onEndCallbacks[prevAction] then
+				onEndCallbacks[prevAction](gigax, onEndData, currentAction)
+			end
+			local callback = actionCallbacks[currentAction]
+			prevAction = string.lower(e.actionType)
 			if not callback then
 				print("action not handled")
 				return
 			end
-			callback(gigax, e.actionData, config)
-		elseif e.action == "mainCharacterCreated" then
-			-- Setup a new timer to delay the next update call
-			characterId = e.character._id
-			updateLocationTimer = Timer(0.5, true, function()
-				local e = Event()
-				e.action = "updateCharacterLocation"
-				e.position = Player.Position
-				e.characterId = characterId
-				e:SendTo(Server)
-			end)
-		-- print("Character ID: " .. character._id)
-		elseif e.action == "NPCRegistered" then
-			-- Update NPC in the client side table to add the _id
-			local npc = npcDataClient[e.npcName]
-			npc._id = e.npcId
-			npc.object.Position = e.npcPosition
-			npcDataClientById[npc._id] = npc
-			engineId = e["gigax.engineId"]
+			onEndData = callback(gigax, e.actionData, config)
 		end
 	end
 
-	local function createNPC(
-		avatarId,
-		physicalDescription,
-		psychologicalProfile,
-		currentLocationName,
-		currentPosition,
-		skills
-	)
+	local function createNPC(name, currentPosition)
 		-- Create the NPC's Object and Avatar
 		local NPC = {}
 		NPC.object = Object()
@@ -385,18 +387,19 @@ else
 		container.Physics = PhysicsMode.Trigger
 		NPC.object.avatarContainer = container
 
-		NPC.avatar = require("avatar"):get(avatarId)
+		NPC.avatar = require("avatar"):get(name)
 		NPC.avatar:SetParent(NPC.object.avatarContainer)
 		NPC.avatar.Rotation.Y = math.pi * 2
 
-		npcDataClient[avatarId] = {
-			name = avatarId,
+		npcDataClient[name] = {
+			name = name,
 			avatar = NPC.avatar,
 			object = NPC.object,
 		}
 
-		NPC.object.onIdle = function(obj)
+		NPC.object.onIdle = function()
 			local animations = NPC.avatar.Animations
+			NPC.object.avatarContainer.LocalRotation = { 0, 0, 0 }
 			if not animations or animations.Idle.IsPlaying then
 				return
 			end
@@ -406,8 +409,9 @@ else
 			animations.Idle:Play()
 		end
 
-		NPC.object.onMove = function(obj)
+		NPC.object.onMove = function()
 			local animations = NPC.avatar.Animations
+			NPC.object.avatarContainer.LocalRotation = { 0, 0, 0 }
 			if not animations or animations.Walk.IsPlaying then
 				return
 			end
@@ -417,60 +421,28 @@ else
 			animations.Walk:Play()
 		end
 
-		NPC.current_location = { _id = 0 }
-		Timer(1, function()
-			local position = Map:WorldToBlock(NPC.avatar.Position)
-			local closest = _helpers:findClosestLocation(position, locationData)
-			if closest._id ~= NPC.current_location._id and closest._id ~= nil then
-				updateCharacterLocation(NPC._id, closest._id, position)
-				NPC.current_location._id = closest._id
+		waitingLinkNPCs[name] = NPC
+
+		-- review this to update location and position
+		Timer(1, true, function()
+			if not simulation then
+				return
 			end
+			local position = Map:WorldToBlock(NPC.object.Position)
+			gigax:updateCharacterPosition(simulation, NPC._id, position)
 		end)
-
-		local e = Event()
-		e.action = "registerNPC"
-		e.avatarId = avatarId
-		e.physicalDescription = physicalDescription
-		e.psychologicalProfile = psychologicalProfile
-		e.currentLocationName = currentLocationName
-		e.skills = skills
-		e:SendTo(Server)
 		return NPC
-	end
-
-	local function createLocation(name, position, description)
-		local e = Event()
-		e.action = "registerLocation"
-		e.name = name
-		e.position = position
-		e.description = description
-		e:SendTo(Server)
 	end
 
 	gigax.setConfig = function(_, _config)
 		config = _config
 
 		for _, elem in ipairs(config.skills) do
-			skillOnAction(string.lower(elem.name), elem.callback)
+			skillOnAction(string.lower(elem.name), elem.callback, elem.onEndCallback)
 		end
-		for _, elem in ipairs(config.locations) do
-			createLocation(elem.name, elem.pos, elem.description)
+		for _, elem in ipairs(config.NPCs) do
+			createNPC(elem.name, elem.pos)
 		end
-		local cleanSkills = JSON:Decode(JSON:Encode(config.skills))
-		for _, elem in ipairs(cleanSkills) do
-			elem.callback = nil
-		end
-		for _, elem in ipairs(config.npcs) do
-			createNPC(elem.name, elem.description, elem.mood, elem.location, elem.pos, cleanSkills)
-		end
-
-		Timer(2, function()
-			-- Adding a timer here, otherwise engine is not ready yet
-			local e = Event()
-			e.action = "registerEngine"
-			e.simulationName = config.simulationName
-			e:SendTo(Server)
-		end)
 	end
 
 	LocalEvent:Listen(LocalEvent.Name.DidReceiveEvent, function(event)
