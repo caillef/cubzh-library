@@ -19,11 +19,7 @@ local _moveNoPhysics = function(object, dt)
 			return
 		end
 
-		for k, v in ipairs(objectsMoving) do
-			if v == object then
-				table.remove(objectsMoving, k)
-			end
-		end
+		object:StopMovement()
 		return
 	end
 	local dest = Number3(object.destination.X, 0, object.destination.Z)
@@ -35,15 +31,7 @@ local _moveNoPhysics = function(object, dt)
 		if object.pfPath[object.pfStep] ~= nil then
 			_followPath(object, object.pfPath, object.pfStep)
 		else
-			object.destination = nil
-			for k, v in ipairs(objectsToMove) do
-				if v == object then
-					table.remove(objectsToMove, k)
-				end
-			end
-			if object.onIdle then
-				object:onIdle()
-			end
+			object:StopMovement()
 		end
 	else
 		_followPath(object, object.pfPath, object.pfStep)
@@ -97,6 +85,19 @@ pathfinding.followObject = function(_, source, target)
 	source.target = target
 	table.insert(objectsMoving, source)
 
+	source.StopMovement = function(object)
+		object.target = nil
+		object.destination = nil
+		for k, v in ipairs(objectsMoving) do
+			if v == object then
+				table.remove(objectsMoving, k)
+			end
+		end
+		if object.onIdle then
+			object:onIdle()
+		end
+	end
+
 	-- every one second compute path
 	local followHandler = Timer(1, true, function()
 		local origin = Map:WorldToBlock(source.Position)
@@ -122,12 +123,7 @@ pathfinding.followObject = function(_, source, target)
 	return {
 		Stop = function()
 			followHandler:Cancel()
-			source.target = nil
-			for k, v in ipairs(objectsMoving) do
-				if v == source then
-					table.remove(objectsMoving, k)
-				end
-			end
+			source:StopMovement()
 		end,
 	}
 end
