@@ -11,19 +11,6 @@ local headers = {
 	["Authorization"] = CUBZH_API_TOKEN,
 }
 
-Timer(5, function()
-	if IsServer then
-		print("MOD LOADED ON SERVER")
-	end
-
-	if IsClient then
-		print("MOD LOADED ON CLIENT")
-	end
-
-	print("IsClient:", IsClient)
-	print("IsServer:", IsServer)
-end)
-
 -- HELPERS
 local _helpers = {}
 
@@ -176,8 +163,11 @@ if IsServer then
 			registerMainCharacter(simulation, simulation.locations["Medieval Inn"]._id, function()
 				local e = Event()
 				e.action = "linkEngine"
-				e.simulation =
-					{ NPCs = simulation.NPCs, locations = simulation.locations, engineId = simulation.engineId }
+				e.simulation = {
+					-- NPCs = simulation.NPCs,
+					locations = simulation.locations,
+					engineId = simulation.engineId,
+				}
 				e:SendTo(simulation.player)
 			end)
 		end)
