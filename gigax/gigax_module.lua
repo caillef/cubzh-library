@@ -321,7 +321,7 @@ else
 					npcDataClient[name] = npc
 					npcDataClientById[npc._id] = npc
 					npcDataClient[name]._id = npc._id
-					npcDataClient[name].object.Position = npc.position
+					npcDataClient[name].object.Position = simulation.NPCs[name].position
 				else
 					print("Can't link NPC", name)
 				end
