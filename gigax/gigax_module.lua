@@ -60,6 +60,7 @@ _helpers.findClosestLocation = function(_, position, locationData)
 end
 
 if IsServer then
+	-- SERVER
 	local simulations = {}
 
 	local function registerMainCharacter(simulation, locationId, done)
@@ -158,6 +159,7 @@ if IsServer then
 			for _, npc in pairs(responseData.NPCs) do
 				simulation.NPCs[npc.name]._id = npc._id
 				simulation.NPCs[npc.name].position = Number3(npc.position.x, npc.position.y, npc.position.z)
+				simulation.NPCs[npc.name].skills = nil
 			end
 
 			registerMainCharacter(simulation, simulation.locations["Medieval Inn"]._id, function()
@@ -245,7 +247,7 @@ if IsServer then
 		serverDidReceiveEvent(e)
 	end)
 else
-	-- client
+	-- CLIENT
 	local npcDataClient = {} -- map <name,table>
 	local npcDataClientById = {}
 
