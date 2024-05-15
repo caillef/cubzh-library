@@ -81,11 +81,8 @@ pathfinding.createPathfindingMap = function(_, config) -- Takes the map as argum
 	return map2d
 end
 
-pathfinding.followObject = function(_, source, target)
-	source.target = target
-	table.insert(objectsMoving, source)
-
-	source.stopMovement = function(object)
+local setStopMovementCallback = function(obj)
+	obj.stopMovement = function(object)
 		object.target = nil
 		object.destination = nil
 		for k, v in ipairs(objectsMoving) do
@@ -97,6 +94,17 @@ pathfinding.followObject = function(_, source, target)
 			object:onIdle()
 		end
 	end
+end
+
+pathfinding.followObject = function(_, source, target)
+	if source.stopMovement then
+		source:stopMovement()
+	end
+
+	source.target = target
+	table.insert(objectsMoving, source)
+
+	setStopMovementCallback(source)
 
 	-- every one second compute path
 	local followHandler = Timer(1, true, function()
@@ -129,7 +137,9 @@ pathfinding.followObject = function(_, source, target)
 end
 
 pathfinding.moveObjectTo = function(_, obj, origin, destination)
-	obj.target = nil -- cancel follow
+	if obj.stopMovement then
+		obj:stopMovement()
+	end
 
 	origin = Number3(f(origin.X), f(origin.Y), f(origin.Z))
 	destination = Number3(f(destination.X), f(destination.Y), f(destination.Z))
