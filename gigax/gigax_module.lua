@@ -176,7 +176,7 @@ if IsServer then
 		end)
 	end
 
-	local function stepMainCharacter(simulation, actionType, targetId, targetName, content)
+	local function stepMainCharacter(simulation, actionType, content)
 		if not simulation then
 			return
 		end
@@ -186,8 +186,6 @@ if IsServer then
 		local stepActionData = {
 			character_id = character._id, -- Use the character ID from the creation/fetch response
 			action_type = actionType,
-			target = targetId,
-			target_name = targetName,
 			content = content,
 		}
 		local stepJsonData = JSON:Encode(stepActionData)
@@ -217,13 +215,7 @@ if IsServer then
 			return
 		end
 		if e.action == "stepMainCharacter" then
-			stepMainCharacter(
-				simulation,
-				e.actionType,
-				simulation.NPCs["aduermael"]._id,
-				simulation.NPCs["aduermael"].name,
-				e.content
-			)
+			stepMainCharacter(simulation, e.actionType, e.content)
 		else
 			print("Unknown Gigax message received from server.")
 		end
