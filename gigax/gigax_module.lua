@@ -145,6 +145,33 @@ if IsServer then
 		}
 	end
 
+	local function registerMainCharacter(locationId, sender)
+		-- Example character data, replace with actual data as needed
+		local newCharacterData = {
+			name = "oncheman",
+			physical_description = "A human playing the game",
+			current_location_id = locationId,
+			position = { x = 0, y = 0, z = 0 },
+		}
+
+		-- Serialize the character data to JSON
+		local jsonData = JSON:Encode(newCharacterData)
+
+		local apiUrl = API_URL .. "/api/character/company/main?engine_id=" .. engineId
+
+		-- Make the HTTP POST request
+		HTTP:Post(apiUrl, headers, jsonData, function(response)
+			if response.StatusCode ~= 200 then
+				print("Error creating or fetching main character: " .. response.StatusCode)
+			end
+			character = JSON:Decode(response.Body)
+			local e = Event()
+			e.action = "mainCharacterCreated"
+			e["character"] = character
+			e:SendTo(sender)
+		end)
+	end
+
 	local function registerEngine(sender, simulationName)
 		local apiUrl = API_URL .. "/api/engine/company/"
 
@@ -192,33 +219,6 @@ if IsServer then
 			end
 
 			registerMainCharacter(locationData["Medieval Inn"]._id, sender)
-		end)
-	end
-
-	local function registerMainCharacter(locationId, sender)
-		-- Example character data, replace with actual data as needed
-		local newCharacterData = {
-			name = "oncheman",
-			physical_description = "A human playing the game",
-			current_location_id = locationId,
-			position = { x = 0, y = 0, z = 0 },
-		}
-
-		-- Serialize the character data to JSON
-		local jsonData = JSON:Encode(newCharacterData)
-
-		local apiUrl = API_URL .. "/api/character/company/main?engine_id=" .. engineId
-
-		-- Make the HTTP POST request
-		HTTP:Post(apiUrl, headers, jsonData, function(response)
-			if response.StatusCode ~= 200 then
-				print("Error creating or fetching main character: " .. response.StatusCode)
-			end
-			character = JSON:Decode(response.Body)
-			local e = Event()
-			e.action = "mainCharacterCreated"
-			e["character"] = character
-			e:SendTo(sender)
 		end)
 	end
 
