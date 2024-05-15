@@ -239,7 +239,6 @@ if IsServer then
 			print("Error: Call gigax:setConfig(config) in Server.OnStart")
 			return
 		end
-		print(player)
 		player.simulationName = player.UserID .. "_" .. config.simulationName
 		registerEngine(player, player.simulationName, config)
 	end)
