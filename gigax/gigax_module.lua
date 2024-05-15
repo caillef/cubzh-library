@@ -291,6 +291,8 @@ else
 			position = { x = position.X, y = position.Y, z = position.Z },
 		}
 
+		print(characterId, location_id, position)
+
 		local jsonData = JSON:Encode(updateData)
 		local apiUrl = API_URL .. "/api/character/" .. characterId .. "?engine_id=" .. simulation.engineId
 
