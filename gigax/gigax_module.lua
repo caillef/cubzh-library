@@ -35,9 +35,9 @@ end
 
 -- Function to calculate distance between two positions
 _helpers.calculateDistance = function(_, pos1, pos2)
-	local dx = pos1.X - pos2.x
-	local dy = pos1.Y - pos2.y
-	local dz = pos1.Z - pos2.z
+	local dx = pos1.X - pos2.X
+	local dy = pos1.Y - pos2.Y
+	local dz = pos1.Z - pos2.Z
 	return math.sqrt(dx * dx + dy * dy + dz * dz)
 end
 
@@ -49,7 +49,6 @@ _helpers.findClosestLocation = function(_, position, locationData)
 	local smallestDistance = math.huge -- Large initial value
 
 	for _, location in pairs(locationData) do
-		print(position, Number3(location.position.x, location.position.y, location.position.z))
 		local distance = _helpers:calculateDistance(
 			position,
 			Map:WorldToBlock(Number3(location.position.x, location.position.y, location.position.z))
