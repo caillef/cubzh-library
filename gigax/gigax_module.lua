@@ -222,7 +222,6 @@ if IsServer then
 			print("no simulation available for ", e.Sender.Username, e.Sender.simulationName)
 			return
 		end
-		print("Server received", e.action)
 		if e.action == "stepMainCharacter" then
 			stepMainCharacter(simulation, e.actionType, e.content)
 		else
@@ -337,7 +336,6 @@ else
 			if onEndData and onEndCallbacks[prevAction] then
 				onEndCallbacks[prevAction](gigax, onEndData, currentAction)
 			end
-			print(e.actionType, e.actionData.character_id, JSON:Encode(e.actionData))
 			local callback = actionCallbacks[currentAction]
 			prevAction = string.lower(e.actionType)
 			if not callback then
