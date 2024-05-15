@@ -102,9 +102,8 @@ pathfinding.followObject = function(_, source, target)
 	end
 
 	source.target = target
-	table.insert(objectsMoving, source)
-
 	setStopMovementCallback(source)
+	table.insert(objectsMoving, source)
 
 	-- every one second compute path
 	local followHandler = Timer(1, true, function()
@@ -140,6 +139,7 @@ pathfinding.moveObjectTo = function(_, obj, origin, destination)
 	if obj.stopMovement then
 		obj:stopMovement()
 	end
+	setStopMovementCallback(obj)
 
 	origin = Number3(f(origin.X), f(origin.Y), f(origin.Z))
 	destination = Number3(f(destination.X), f(destination.Y), f(destination.Z))
