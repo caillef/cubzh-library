@@ -11,16 +11,18 @@ local headers = {
 	["Authorization"] = CUBZH_API_TOKEN,
 }
 
-if IsServer then
-	print("MOD LOADED ON SERVER")
-end
+Timer(5, function()
+	if IsServer then
+		print("MOD LOADED ON SERVER")
+	end
 
-if IsClient then
-	print("MOD LOADED ON CLIENT")
-end
+	if IsClient then
+		print("MOD LOADED ON CLIENT")
+	end
 
-print("IsClient:", IsClient)
-print("IsServer:", IsServer)
+	print("IsClient:", IsClient)
+	print("IsServer:", IsServer)
+end)
 
 -- HELPERS
 local _helpers = {}
@@ -114,10 +116,6 @@ gigax.updateCharacterPosition = function(_, characterId, position)
 		end
 	end)
 end
-
-Timer(5, function()
-	print("is server", IsServer)
-end)
 
 if IsServer then
 	local character
