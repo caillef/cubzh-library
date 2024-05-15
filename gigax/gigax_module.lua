@@ -186,6 +186,8 @@ if IsServer then
 		local stepActionData = {
 			character_id = character._id, -- Use the character ID from the creation/fetch response
 			action_type = actionType,
+			target = "test",
+			target_id = "test",
 			content = content,
 		}
 		local stepJsonData = JSON:Encode(stepActionData)
