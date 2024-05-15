@@ -272,7 +272,7 @@ if IsServer then
 			local closest = _helpers:findClosestLocation(e.position, locationData)
 			-- if closest._id is different from the current location, update the character's location
 			if closest._id ~= character.current_location._id and closest._id ~= nil then
-				updateCharacterLocation(e.characterId, closest._id, e.position)
+				gigax.haracterLocation(e.characterId, closest._id, e.position)
 				character.current_location._id = closest._id
 			end
 		else
