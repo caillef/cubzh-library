@@ -186,8 +186,8 @@ if IsServer then
 		local stepActionData = {
 			character_id = character._id, -- Use the character ID from the creation/fetch response
 			action_type = actionType,
-			target = "aduermael",
-			target_id = simulation.NPCs["aduermael"]._id,
+			target_name = "aduermael",
+			target = simulation.NPCs["aduermael"]._id,
 			content = content,
 		}
 		local stepJsonData = JSON:Encode(stepActionData)
