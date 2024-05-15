@@ -19,7 +19,7 @@ local _moveNoPhysics = function(object, dt)
 			return
 		end
 
-		object:StopMovement()
+		object:stopMovement()
 		return
 	end
 	local dest = Number3(object.destination.X, 0, object.destination.Z)
@@ -31,7 +31,7 @@ local _moveNoPhysics = function(object, dt)
 		if object.pfPath[object.pfStep] ~= nil then
 			_followPath(object, object.pfPath, object.pfStep)
 		else
-			object:StopMovement()
+			object:stopMovement()
 		end
 	else
 		_followPath(object, object.pfPath, object.pfStep)
@@ -85,7 +85,7 @@ pathfinding.followObject = function(_, source, target)
 	source.target = target
 	table.insert(objectsMoving, source)
 
-	source.StopMovement = function(object)
+	source.stopMovement = function(object)
 		object.target = nil
 		object.destination = nil
 		for k, v in ipairs(objectsMoving) do
@@ -123,7 +123,7 @@ pathfinding.followObject = function(_, source, target)
 	return {
 		Stop = function()
 			followHandler:Cancel()
-			source:StopMovement()
+			source:stopMovement()
 		end,
 	}
 end
