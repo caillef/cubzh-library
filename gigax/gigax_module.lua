@@ -106,6 +106,7 @@ if IsServer then
 			name = simulationName, -- using Player.UserID to keep simulation name unique
 			NPCs = {},
 			locations = {}, -- Populate if you have dynamic location data similar to NPCs
+			radius,
 		}
 
 		-- remove functions in skill
@@ -198,6 +199,8 @@ if IsServer then
 				return
 			end
 
+			print("Stepped main character with ", #actions, " actions")
+
 			local actions = JSON:Decode(stepResponse.Body)
 			-- Find the target character by id using the "target" field in the response:
 			for _, action in ipairs(actions) do
@@ -216,6 +219,7 @@ if IsServer then
 			print("no simulation available for ", e.Sender.Username, e.Sender.simulationName)
 			return
 		end
+		print("Server received", e.action)
 		if e.action == "stepMainCharacter" then
 			stepMainCharacter(simulation, e.actionType, e.content)
 		else
