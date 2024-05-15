@@ -438,7 +438,7 @@ else
 			skillOnAction(string.lower(elem.name), elem.callback, elem.onEndCallback)
 		end
 		for _, elem in ipairs(config.NPCs) do
-			createNPC(elem.name, elem.pos)
+			createNPC(elem.name, elem.position)
 		end
 	end
 
