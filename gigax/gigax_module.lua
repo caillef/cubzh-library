@@ -160,6 +160,8 @@ if IsServer then
 			for _, npc in pairs(responseData.NPCs) do
 				simulation.NPCs[npc.name]._id = npc._id
 				simulation.NPCs[npc.name].position = Number3(npc.position.x, npc.position.y, npc.position.z)
+
+				-- TODO: check hwy we need this
 				simulation.NPCs[npc.name].skills = nil
 			end
 
@@ -330,7 +332,6 @@ else
 			engineId = simulation.engineId
 
 			updateLocationTimer = Timer(1, true, function()
-				print("main character", simulation.character, simulation.character._id)
 				gigax:updateCharacterPosition(simulation, simulation.character._id, Player.Position)
 			end)
 		elseif e.action == "NPCActionResponse" then
@@ -428,7 +429,6 @@ else
 				return
 			end
 			local position = Map:WorldToBlock(NPC.object.Position)
-			print("NPC", name, NPC._id)
 			gigax:updateCharacterPosition(simulation, NPC._id, position)
 		end)
 		return NPC
