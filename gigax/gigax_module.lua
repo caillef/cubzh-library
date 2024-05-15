@@ -198,10 +198,10 @@ if IsServer then
 				print("Error stepping character: " .. stepResponse.StatusCode)
 				return
 			end
+			local actions = JSON:Decode(stepResponse.Body)
 
 			print("Stepped main character with ", #actions, " actions")
 
-			local actions = JSON:Decode(stepResponse.Body)
 			-- Find the target character by id using the "target" field in the response:
 			for _, action in ipairs(actions) do
 				local e = Event()
