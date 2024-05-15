@@ -51,7 +51,7 @@ _helpers.findClosestLocation = function(_, position, locationData)
 	for _, location in pairs(locationData) do
 		local distance = _helpers:calculateDistance(
 			position,
-			Map:BlockToWorld({ location.position.x, location.position.y, location.position.z })
+			Map:WorldToBlock(Number3(location.position.x, location.position.y, location.position.z))
 		)
 		if distance < smallestDistance then
 			smallestDistance = distance
@@ -429,7 +429,6 @@ else
 				return
 			end
 			local position = Map:WorldToBlock(NPC.object.Position)
-			print(name, "is", NPC._id)
 			gigax:updateCharacterPosition(simulation, NPC._id, position)
 		end)
 		return NPC
