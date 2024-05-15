@@ -330,6 +330,7 @@ else
 			if onEndData and onEndCallbacks[prevAction] then
 				onEndCallbacks[prevAction](gigax, onEndData, currentAction)
 			end
+			print(e.actionType, e.actionData.character_id, JSON:Encode(e.actionData))
 			local callback = actionCallbacks[currentAction]
 			prevAction = string.lower(e.actionType)
 			if not callback then
