@@ -383,6 +383,7 @@ else
 		NPC.avatar:SetParent(NPC.object.avatarContainer)
 		NPC.avatar.Rotation.Y = math.pi * 2
 
+		NPC.name = name
 		npcDataClient[name] = {
 			name = name,
 			avatar = NPC.avatar,
