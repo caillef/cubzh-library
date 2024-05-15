@@ -312,12 +312,16 @@ else
 		if e.action == "linkEngine" then
 			simulation = e.simulation
 			for name, npc in pairs(waitingLinkNPCs) do
-				npc._id = simulation.NPCs[name]._id
+				if simulation.NPCs[name] then
+					npc._id = simulation.NPCs[name]._id
 
-				npcDataClient[name] = npc
-				npcDataClientById[npc._id] = npc
-				npcDataClient[name]._id = npc._id
-				npcDataClient[name].object.Position = npc.position
+					npcDataClient[name] = npc
+					npcDataClientById[npc._id] = npc
+					npcDataClient[name]._id = npc._id
+					npcDataClient[name].object.Position = npc.position
+				else
+					print("Can't link NPC", name)
+				end
 			end
 			engineId = simulation.engineId
 
