@@ -19,7 +19,6 @@ local _moveNoPhysics = function(object, dt)
 			return
 		end
 
-		print("DEBUG stop a")
 		object:stopMovement()
 		return
 	end
@@ -32,9 +31,9 @@ local _moveNoPhysics = function(object, dt)
 		if object.pfPath[object.pfStep] ~= nil then
 			_followPath(object, object.pfPath, object.pfStep)
 		else
-			print("DEBUG stop b")
-
-			object:stopMovement()
+			if not object.target then
+				object:stopMovement()
+			end
 		end
 	else
 		_followPath(object, object.pfPath, object.pfStep)
@@ -101,7 +100,6 @@ end
 
 pathfinding.followObject = function(_, source, target)
 	if source.stopMovement then
-		print("DEBUG stop c")
 
 		source:stopMovement()
 	end
@@ -135,7 +133,6 @@ pathfinding.followObject = function(_, source, target)
 	return {
 		Stop = function()
 			followHandler:Cancel()
-			print("DEBUG stop d")
 
 			source:stopMovement()
 		end,
@@ -144,7 +141,6 @@ end
 
 pathfinding.moveObjectTo = function(_, obj, origin, destination)
 	if obj.stopMovement then
-		print("DEBUG stop e")
 
 		obj:stopMovement()
 	end
