@@ -49,7 +49,7 @@ end
 pathfinding.createPathfindingMap = function(_, config) -- Takes the map as argument
 	local defaultPathfindingConfig = {
 		map = Map,
-		pathHeight = 3,
+		pathHeight = 2,
 		pathLevel = 1,
 		obstacleGroups = { 3 },
 	}
