@@ -220,7 +220,6 @@ pathfinding.findPath = function(_, origin, destination)
 		local neighbors = diagonalsAllowed and diagonalNeighbours or directNeighbors
 		local parentHeight = map[node.x][node.z]
 		if parentHeight == nil or type(parentHeight) == "table" then
-			print(JSON:Encode(parentHeight))
 			return {}
 		end
 
