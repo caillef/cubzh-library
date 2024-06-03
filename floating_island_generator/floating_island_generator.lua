@@ -3,8 +3,7 @@
 --[[
 USAGE
 Modules = {
-    floating_island_generator = "github.com/caillef/cubzh-library/floating_island_generator:
-28dfae6"
+    floating_island_generator = "github.com/caillef/cubzh-library/floating_island_generator:82d22a5"
 }
 
 Client.OnStart = function()
