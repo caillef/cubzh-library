@@ -3,7 +3,7 @@
 --[[
 USAGE
 Modules = {
-    floating_island_generator = "https://github.com/caillef/cubzh-library/floating_island_generator:
+    floating_island_generator = "github.com/caillef/cubzh-library/floating_island_generator:
 28dfae6"
 }
 
