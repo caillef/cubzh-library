@@ -7,40 +7,14 @@ Modules = {
 28dfae6"
 }
 
-function generateIslands()
-	local nbIslands = 20
-	local minSize = 4
-	local maxSize = 7
-	local dist = 750
-	local safearea = 200
-	floating_islands_generator:onReady(function()
-		for i=1,nbIslands do
-			local island = floating_islands_generator:create(math.random(minSize, maxSize))
-			island:SetParent(World)
-			island.Scale = Map.Scale
-			island.Physics = PhysicsMode.Disabled
-			local x = math.random(-dist,dist)
-			local z = math.random(-dist,dist)
-			while (x >= -safearea and x <= safearea) and (z >= -safearea and z <= safearea) do
-				x = math.random(-dist,dist)
-				z = math.random(-dist,dist)
-			end
-			island.Position = {
-				x + (Map.Width * 0.5) * Map.Scale.X,
-				math.random(300) - 150,
-				z + (Map.Depth * 0.5) * Map.Scale.Z
-			}
-			local t = x + z
-			LocalEvent:Listen(LocalEvent.Name.Tick, function(dt)
-				t = t + dt
-				island.Position.Y = island.Position.Y + math.sin(t) * 0.02
-			end)
-		end
-	end)
-end
-
 Client.OnStart = function()
-    generateIslands()
+    floating_island_generator:generateIslands({
+		nbIslands = 20, -- number of islands
+		minSize = 4, -- min size of island
+		maxSize = 7, -- max size of island
+		safearea = 200, -- min dist of islands from 0,0,0
+		dist = 750, -- max dist of islands
+	})
 end
 --]]
 
@@ -61,14 +35,14 @@ local function islandHeight(x, z, radius)
 	return maxy
 end
 
-floating_island_generator.onReady = function(_, callback)
+local function onReady(callback)
 	Object:Load("knosvoxel.oak_tree", function(obj)
 		cachedTree = obj
 		callback()
 	end)
 end
 
-floating_island_generator.create = function(_, radius)
+local function create(radius)
 	local shape = MutableShape()
 	shape.Pivot = { 0.5, 0.5, 0.5 }
 	for z = -radius, radius do
@@ -123,6 +97,39 @@ floating_island_generator.create = function(_, radius)
 	end
 
 	return shape
+end
+
+floating_island_generator.generateIslands = function(_, config)
+	config = config or {}
+	local nbIslands = config.nbIslands or 20
+	local minSize = config.minSize or 4
+	local maxSize = config.maxSize or 7
+	local dist = config.dist or 750
+	local safearea = config.safearea or 200
+	onReady(function()
+		for i = 1, nbIslands do
+			local island = create(math.random(minSize, maxSize))
+			island:SetParent(World)
+			island.Scale = Map.Scale
+			island.Physics = PhysicsMode.Disabled
+			local x = math.random(-dist, dist)
+			local z = math.random(-dist, dist)
+			while (x >= -safearea and x <= safearea) and (z >= -safearea and z <= safearea) do
+				x = math.random(-dist, dist)
+				z = math.random(-dist, dist)
+			end
+			island.Position = {
+				x + (Map.Width * 0.5) * Map.Scale.X,
+				math.random(300) - 150,
+				z + (Map.Depth * 0.5) * Map.Scale.Z,
+			}
+			local t = x + z
+			LocalEvent:Listen(LocalEvent.Name.Tick, function(dt)
+				t = t + dt
+				island.Position.Y = island.Position.Y + math.sin(t) * 0.02
+			end)
+		end
+	end)
 end
 
 return floating_island_generator
