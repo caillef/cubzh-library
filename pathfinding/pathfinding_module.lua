@@ -85,7 +85,6 @@ end
 
 local setStopMovementCallback = function(obj)
 	obj.stopMovement = function(object)
-		print("stopMovement", object.onIdle)
 		object.target = nil
 		object.destination = nil
 		for k, v in ipairs(objectsMoving) do
@@ -118,6 +117,9 @@ pathfinding.followObject = function(_, source, target)
 		-- if too close, stop following
 		if (destination - origin).Length < 5 then
 			source.destination = nil
+			if source.onIdle then
+				source:onIdle()
+			end
 			return
 		end
 
