@@ -613,19 +613,22 @@ end)
 
 LocalEvent:Listen("InvGetQuantity", function(data)
 	local keys = type(data.keys) == "table" and data.keys or { data.keys }
-	local rKey = data.rKey
+	local rKey = type(data.rKey) == "table" and data.rKey or { data.rKey }
 
-	local quantities = {
-		total = 0,
-	}
-	for _, key in ipairs(keys) do
-		local inventory = inventoryModule.inventories[key]
-		if not inventory then
-			error("Inventory: can't find " .. key, 2)
+	local quantities = {}
+	for _, resKey in ipairs(rKey) do
+		quantities[resKey] = {
+			total = 0,
+		}
+		for _, key in ipairs(keys) do
+			local inventory = inventoryModule.inventories[key]
+			if not inventory then
+				error("Inventory: can't find " .. key, 2)
+			end
+			local qty = inventory:getQuantity(resKey)
+			quantities[resKey].total = quantities[resKey].total + qty
+			quantities[resKey][key] = qty
 		end
-		local qty = inventory:getQuantity(rKey)
-		quantities.total = quantities.total + qty
-		quantities[key] = qty
 	end
 	if not data.callback then
 		return
