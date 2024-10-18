@@ -481,17 +481,33 @@ inventoryModule.create = function(_, iKey, config)
 				shape.Size = uiSlot.Width * 0.5
 				shape.pos = { uiSlot.Width * 0.25, uiSlot.Height * 0.25 }
 			end
-		elseif resource.icon and resource.cachedShape then
-			local obj = Shape(resource.cachedShape, { includeChildren = true })
-			local shape = ui:createShape(obj, { spherized = true })
-			shape:setParent(content)
-			shape.pivot.Rotation = resource.icon.rotation
-			shape.pivot.Scale = shape.pivot.Scale * resource.icon.scale
+		elseif resource.icon then
+			if resource.cachedShape then
+				local obj = Shape(resource.cachedShape, { includeChildren = true })
+				local shape = ui:createShape(obj, { spherized = true })
+				shape:setParent(content)
+				shape.pivot.Rotation = resource.icon.rotation
+				shape.pivot.Scale = shape.pivot.Scale * resource.icon.scale
 
-			shape.parentDidResize = function()
-				shape.Size = math.min(uiSlot.Width * 0.5, uiSlot.Height * 0.5)
-				shape.pos = Number3(uiSlot.Width * 0.25, uiSlot.Height * 0.25, 0)
-					+ { resource.icon.pos[1] * uiSlot.Width, resource.icon.pos[2] * uiSlot.Height, 0 }
+				shape.parentDidResize = function()
+					shape.Size = math.min(uiSlot.Width * 0.5, uiSlot.Height * 0.5)
+					shape.pos = Number3(uiSlot.Width * 0.25, uiSlot.Height * 0.25, 0)
+						+ { resource.icon.pos[1] * uiSlot.Width, resource.icon.pos[2] * uiSlot.Height, 0 }
+				end
+			else
+				Timer(2, function()
+local obj = Shape(resource.cachedShape, { includeChildren = true })
+				local shape = ui:createShape(obj, { spherized = true })
+				shape:setParent(content)
+				shape.pivot.Rotation = resource.icon.rotation
+				shape.pivot.Scale = shape.pivot.Scale * resource.icon.scale
+
+				shape.parentDidResize = function()
+					shape.Size = math.min(uiSlot.Width * 0.5, uiSlot.Height * 0.5)
+					shape.pos = Number3(uiSlot.Width * 0.25, uiSlot.Height * 0.25, 0)
+						+ { resource.icon.pos[1] * uiSlot.Width, resource.icon.pos[2] * uiSlot.Height, 0 }
+				end
+						end)
 			end
 		else -- unknown, red block
 			local b = MutableShape()
